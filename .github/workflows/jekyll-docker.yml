@@ -1,0 +1,828 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta http-equiv="Cache-Control" content="no-store" />
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>3I/ATLAS – OFFLINE (Approche Terre)</title>
+<link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&display=swap" rel="stylesheet">
+<script src="https://cdn.plot.ly/plotly-2.35.2.min.js"></script>
+<style>
+  :root{ --vh:1vh; }
+  html,body{height:100%;margin:0}
+  body{background:#07162a;color:#e6f2ff;font:16px/1.5 Arial,Helvetica,sans-serif}
+  #scene{position:fixed;left:0;top:0;width:100vw;height:calc(var(--vh)*70);z-index:1}
+  #distPanel{position:fixed;left:0;right:0;bottom:0;height:calc(var(--vh)*30);z-index:12;
+    background:linear-gradient(180deg,rgba(8,20,38,0.92),rgba(8,20,38,0.98));border-top:1px solid #153d5f}
+  #distChart{width:100%;height:100%}
+
+  /* HUD compact centré */
+  #hud{position:fixed;left:50%;top:10px;transform:translateX(-50%);z-index:20;padding:10px 14px;
+    border-radius:12px;border:1px solid #153d5f;background:rgba(8,20,38,0.9);font-family:'Share Tech Mono',monospace}
+  #hud .title{font-size:12px;letter-spacing:2px;color:#9fe7ff}
+  #hud .timer{display:flex;align-items:baseline;gap:6px;margin-top:2px}
+  #hud #hudHours{font-size:34px;line-height:1;color:#00ffd0}
+  #hud .unit{font-size:16px;color:#c8f7ff}
+  #hud #hudMinutes{font-size:16px;color:#a6f1ff}
+  #hud .date{font-size:12px;color:#9ac6e8}
+  #hud .exact{font-size:14px;color:#cfe7ff;margin-top:4px}
+  #hud .bigDelta{font-size:22px;color:#7df9ff;margin-top:6px;letter-spacing:1px}
+  #hud .bigSpeed{font-size:16px;color:#b9ffdf;margin-top:4px}
+  #hud .live{font-size:12px;color:#b9dbff;margin-top:4px}
+
+  /* BOUTONS */
+  .btn{position:fixed;right:10px;z-index:25;padding:8px 10px;border:1px solid #153d5f;border-radius:10px;background:#0b1b30;color:#cfe7ff;cursor:pointer}
+  #fsBtn{top:10px} #focusBtn{top:50px} #resetViewBtn{top:90px} #uiToggleBtn{top:130px}
+
+  /* PANNEAU CONTROLES */
+  #ctrlBox{position:fixed;right:10px;top:170px;z-index:26;display:flex;flex-direction:column;gap:8px;width:420px;max-width:94vw;transition:transform .25s ease;}
+  #ctrlBox.hide{ transform: translateX(460px); }
+  #ctrlBox .ctrl{padding:6px 10px;border:1px solid #153d5f;border-radius:10px;background:#0b1b30;color:#cfe7ff;
+    font:12px/1.4 ui-monospace,Menlo,monospace;width:100%;box-sizing:border-box}
+  #ctrlBox .row{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+  #timeRange{width:100%;display:block}
+
+  /* ERREURS & TOASTS */
+  #errBox{position:fixed;left:10px;bottom:10px;z-index:9999;background:#2b1d1d;color:#ffdada;border:1px solid #5c2a2a;border-radius:10px;padding:8px 10px;max-width:90vw;font:12px/1.4 ui-monospace;display:none;white-space:pre-wrap}
+  #toast{position:fixed;top:12px;left:50%;transform:translateX(-50%);z-index:99999;padding:10px 14px;border-radius:10px;display:none;backdrop-filter:blur(4px)}
+  #toast.ok{background:#103a26;color:#d9ffe9;border:1px solid #1f6f4a}
+  #toast.err{background:#3a1a1a;color:#ffdada;border:1px solid #6a2a2a}
+
+  /* MODAL IMPORT */
+  #manualModal{display:none;position:fixed;inset:0;z-index:99999;background:rgba(0,0,0,0.55)}
+  #manualModal .card{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);width:680px;max-width:92vw;background:#0b1b30;border:1px solid #153d5f;border-radius:12px;padding:12px}
+  #manualText{width:100%;height:220px;background:#081426;color:#e6f2ff;border:1px solid #153d5f;border-radius:8px;padding:8px;font:12px ui-monospace}
+
+  /* DASHBOARD (tuiles) */
+  #dashboard{
+    position:fixed;left:10px;top:10px;z-index:22;
+    display:grid;grid-template-columns:repeat(3,minmax(240px, 1fr));gap:10px;
+    max-width:min(96vw, 780px);
+  }
+  .tile{
+    background:rgba(8,20,38,0.9);border:1px solid #153d5f;border-radius:12px;
+    padding:10px 12px;font-family:'Share Tech Mono', monospace;box-shadow:0 2px 10px rgba(0,0,0,0.25)
+  }
+  .tileTitle{font-size:12px;letter-spacing:1px;color:#9fe7ff;margin-bottom:2px}
+  .tileBig{font-size:24px;line-height:1.2;color:#e6f2ff}
+  .tileSub{font-size:12px;color:#9ac6e8}
+  .tilePlot{width:100%;height:92px}
+
+  @media (max-width: 980px){
+    #dashboard{grid-template-columns:repeat(2,minmax(44vw,1fr));max-width:96vw}
+  }
+  @media (max-width: 640px){
+    #dashboard{grid-template-columns:1fr}
+  }
+</style>
+</head>
+<body>
+<div id="scene"></div>
+
+<!-- DASHBOARD -->
+<div id="dashboard">
+  <div class="tile">
+    <div class="tileTitle">Δ Terre NOW</div>
+    <div id="tileDist" class="tileBig">-- km</div>
+    <div id="tileDistAU" class="tileSub">-- AU</div>
+  </div>
+  <div class="tile">
+    <div class="tileTitle">Vitesse héliocentrique</div>
+    <div id="tileSpeed" class="tileBig">-- km/s</div>
+  </div>
+  <div class="tile">
+    <div class="tileTitle">Vitesse relative Terre</div>
+    <div id="tileVrel" class="tileBig">-- km/s</div>
+  </div>
+  <div class="tile">
+    <div class="tileTitle">Compteur Δ min (UTC)</div>
+    <div id="tileCountdown" class="tileBig">J-000 00:00</div>
+    <div id="tileEta" class="tileSub">ETA: --</div>
+  </div>
+  <div class="tile">
+    <div class="tileTitle">Proximité (0–100 %)</div>
+    <div id="tileGauge" class="tilePlot"></div>
+  </div>
+  <div class="tile">
+    <div class="tileTitle">UTC</div>
+    <div id="tileUTC" class="tileBig">--:--:--</div>
+    <div id="tileDate" class="tileSub">--</div>
+  </div>
+</div>
+
+<!-- HUD compact historique (peut coexister avec le dashboard) -->
+<div id="hud">
+  <div class="title">3 I / ATLAS – APPROCHE TERRE (OFFLINE)</div>
+  <div class="timer"><span id="hudHours">--</span><span class="unit">h</span><span id="hudMinutes">:--:--</span></div>
+  <div class="date" id="hudTarget">Approche (UTC): --</div>
+  <div class="date" id="utcClock">UTC: --</div>
+  <div class="exact" id="hudExact">J-000 00:00:00</div>
+  <div class="bigDelta" id="bigDelta">Delta Terre NOW: -- km</div>
+  <div class="bigSpeed" id="bigSpeed">Vitesse héliocentrique NOW: -- km/s</div>
+  <div class="bigSpeed" id="bigVrel">Vitesse relative Terre NOW: -- km/s</div>
+  <div class="live" id="moonNow">Lune NOW: ΔTL -- km</div>
+  <div class="live" id="hudDist">NOW: t=-- | Δ Terre: -- km | v ~ -- km/s | v_rel ~ -- km/s</div>
+  <div class="live" id="closestInfo">Approche min: --</div>
+  <div class="live" id="liveBadge">Source: OFFLINE (catalogue) — LIVE désactivé</div>
+</div>
+
+<!-- Boutons -->
+<button id="fsBtn" class="btn">Plein écran</button>
+<button id="focusBtn" class="btn">Focus Approche</button>
+<button id="resetViewBtn" class="btn">Reset vue</button>
+<button id="uiToggleBtn" class="btn">UI ◂</button>
+
+<!-- Panneau contrôle -->
+<div id="ctrlBox" class="hide">
+  <div class="row">
+    <select id="offlineSelect" class="ctrl" title="Objets en OFFLINE"></select>
+    <button id="offlineLoad" class="ctrl" style="flex:1">Charger objet</button>
+  </div>
+
+  <select id="windowSel" class="ctrl">
+    <option value="90">Fenêtre: +/- 90 j</option>
+    <option value="180" selected>Fenêtre: +/- 180 j</option>
+    <option value="360">Fenêtre: +/- 360 j</option>
+  </select>
+
+  <label class="ctrl row"><input type="checkbox" id="kmCheck" checked> Axe droit: km (Mkm)</label>
+  <label class="ctrl row"><input type="checkbox" id="logY"> Échelle log (AU)</label>
+
+  <label class="ctrl row">
+    Échelle lecture:
+    <select id="stepSel" class="ctrl" style="margin-left:6px">
+      <option value="0.0104166667">15 min</option>
+      <option value="0.0416666667" selected>1 h</option>
+      <option value="0.25">6 h</option>
+      <option value="0.5">12 h</option>
+      <option value="1">1 j</option>
+    </select>
+  </label>
+
+  <input id="timeRange" class="ctrl" type="range" min="-180" max="180" step="0.5" value="0">
+  <div id="timeRead" class="ctrl">Curseur: tp +0.0 j | -- AU (~ -- Mkm)</div>
+
+  <div class="row">
+    <button id="playBtn" class="ctrl">Lecture</button>
+    <select id="speedSel" class="ctrl">
+      <option value="0.5">Vitesse 0.5x</option>
+      <option value="1" selected>Vitesse 1x</option>
+      <option value="2">Vitesse 2x</option>
+      <option value="5">Vitesse 5x</option>
+    </select>
+    <button id="nowBtn" class="ctrl">Aller à NOW</button>
+    <button id="zoomMinBtn" class="ctrl" title="Zoom sur l'approche minimale">Zoom min</button>
+  </div>
+
+  <div class="row">
+    <label class="ctrl" style="flex:1">Surbrillance ± jours autour du min
+      <input id="hlDays" type="number" class="ctrl" value="7" step="1" min="1" max="60">
+    </label>
+    <button id="applyHL" class="ctrl">Appliquer</button>
+  </div>
+
+  <label class="ctrl row"><input type="checkbox" id="followNow" checked> Camera Follow NOW</label>
+  <label class="ctrl row"><input type="checkbox" id="safeMode"> Mode safe (cache le graphe)</label>
+
+  <!-- OFFLINE catalog -->
+  <div class="row">
+    <input id="offlineName" class="ctrl" placeholder="Nom OFFLINE (ex: 3I/ATLAS)">
+    <button id="offlineSave" class="ctrl">Sauver l'orbite courante</button>
+    <button id="offlineList" class="ctrl">Liste OFFLINE</button>
+  </div>
+
+  <!-- Import manuel + fichier -->
+  <div class="row">
+    <button id="importManual" class="ctrl">Importer éléments (coller)</button>
+    <button id="importSample" class="ctrl">Exemple</button>
+  </div>
+  <div class="row">
+    <button id="importFileBtn" class="ctrl">Charger fichier (.json/.txt)</button>
+    <input id="importFile" type="file" accept=".json,.txt" class="ctrl" style="display:none">
+  </div>
+
+  <div class="row">
+    <button id="exportCsv" class="ctrl">Export CSV</button>
+    <button id="exportJson" class="ctrl">Export JSON</button>
+  </div>
+
+  <details class="ctrl">
+    <summary>Réglages Lune (elliptique)</summary>
+    <div class="grid" style="display:grid;grid-template-columns:1fr 1fr;gap:6px;margin:8px 0">
+      <label>a (km)<input id="moonA" type="number" step="1"></label>
+      <label>e<input id="moonE" type="number" step="0.0001"></label>
+      <label>i (deg)<input id="moonI" type="number" step="0.001"></label>
+      <label>Omega (deg)<input id="moonOmega" type="number" step="0.001"></label>
+      <label>omega (deg)<input id="moonSmallOmega" type="number" step="0.001"></label>
+      <label>Période T (jours)<input id="moonT" type="number" step="0.000001"></label>
+      <label>Epoch (UTC)<input id="moonEpoch" type="datetime-local"></label>
+      <label>M0 (deg)<input id="moonM0" type="number" step="0.001"></label>
+    </div>
+    <div class="row" style="display:flex;gap:8px">
+      <button id="moonApply" class="ctrl">Appliquer</button>
+      <button id="moonReset" class="ctrl">Reset defaut</button>
+    </div>
+  </details>
+</div>
+
+<!-- Modal Import (coller) -->
+<div id="manualModal">
+  <div class="card">
+    <div style="color:#9fe7ff;font:14px ui-monospace;margin-bottom:8px">Importer éléments orbitaux (JSON SBDB/MPC ou format simple)</div>
+    <textarea id="manualText" placeholder='Exemples:
+1) JSON SBDB :
+{"orbit":{"elements":{"e":"6.13","q_au":"1.3563","i_deg":"175.1131","om":"322.1574","w":"128.0127","tp_cal":"2025-10-29T11:35:31"}}}
+
+2) Format simple :
+e=6.138559
+q=1.356320
+inc=175.11310
+Omega=322.15740
+omega=128.01270
+tpISO=2025-10-29T11:35:31'></textarea>
+    <div style="display:flex;gap:8px;margin-top:8px">
+      <button id="manualLoad" class="ctrl" style="flex:1">Charger</button>
+      <button id="manualClose" class="ctrl" style="flex:1">Fermer</button>
+    </div>
+  </div>
+</div>
+
+<div id="distPanel"><div id="distChart"></div></div>
+<div id="errBox"></div>
+<div id="toast"></div>
+
+<script>
+(function(){
+"use strict";
+const BUILD = 'ATLAS-OFFLINE v4.4-dashboard+gauge+countdown';
+console.log('[BUILD]', BUILD);
+
+/* ===== UI utils ===== */
+function setVH(){ document.documentElement.style.setProperty('--vh',(window.innerHeight*0.01)+'px'); }
+setVH(); window.addEventListener('resize', setVH);
+function showError(msg,src,line,col){ var box=document.getElementById("errBox"); if(!box) return; box.style.display="block"; box.textContent="Error: "+msg+(src?("\nSource: "+src):"")+(line?(" line:"+line):"")+(col?(" col:"+col):""); }
+window.onerror=function(m,s,l,c){ showError(m,s,l,c); };
+window.addEventListener('unhandledrejection', e=>{ showError('Promise rejection: '+(e.reason&&e.reason.message||e.reason||e)); });
+function toast(msg, ok){ var t=document.getElementById('toast'); if(!t) return; t.className = ok ? 'ok' : 'err'; t.textContent = msg; t.style.display = 'block'; clearTimeout(t._to); t._to = setTimeout(function(){ t.style.display='none'; }, 4200); }
+
+/* ===== Constantes ===== */
+var AU_KM=149597870.7, DAY_S=86400, D2R=Math.PI/180, R2D=180/Math.PI, TWO_PI=Math.PI*2;
+var k=0.01720209895, mu=k*k;
+
+/* ===== OFFLINE library ===== */
+var OFFLINE_LIB_DEFAULT = {
+  "3I/ATLAS": { e:6.138559, q:1.356320, inc:175.11310, Omega:322.15740, omega:128.01270, tpISO:"2025-10-29T11:35:31" }
+};
+function getOfflineLib(){
+  var base = JSON.parse(JSON.stringify(OFFLINE_LIB_DEFAULT));
+  try{
+    var js = localStorage.getItem('atlas_offline_lib');
+    if(js){ Object.assign(base, JSON.parse(js)); }
+  }catch(_){}
+  return base;
+}
+function setOfflineLibEntry(name, obj){
+  var lib = {};
+  try{ lib = JSON.parse(localStorage.getItem('atlas_offline_lib')||'{}'); }catch(_){}
+  lib[name] = { e:obj.e, q:obj.q, inc:obj.inc, Omega:obj.Omega, omega:obj.omega, tpISO:obj.tpISO };
+  localStorage.setItem('atlas_offline_lib', JSON.stringify(lib));
+}
+function offlineListText(){
+  var lib = getOfflineLib(), out=[];
+  for(var k in lib){
+    var o=lib[k];
+    out.push(k+'  | e='+o.e+'  q='+o.q+'  inc='+o.inc+'  Ω='+o.Omega+'  ω='+o.omega+'  tp='+o.tpISO);
+  }
+  return out.length? out.join('\n') : '(OFFLINE vide)';
+}
+function populateOfflineSelect(){
+  var sel=document.getElementById('offlineSelect'), lib=getOfflineLib();
+  sel.innerHTML='';
+  for(var k in lib){ var opt=document.createElement('option'); opt.value=k; opt.textContent=k; sel.appendChild(opt); }
+}
+
+/* ===== Maths & outils ===== */
+function Rz(a){var c=Math.cos(a),s=Math.sin(a);return [[c,-s,0],[s,c,0],[0,0,1]];}
+function Rx(a){var c=Math.cos(a),s=Math.sin(a);return [[1,0,0],[0,c,-s],[0,s,c]];}
+function Mx(A,v){return [A[0][0]*v[0]+A[0][1]*v[1]+A[0][2]*v[2],A[1][0]*v[0]+A[1][1]*v[1]+A[1][2]*v[2],A[2][0]*v[0]+A[2][1]*v[1]+A[2][2]*v[2]];}
+function M33(A,B){var C=[[0,0,0],[0,0,0],[0,0,0]],i,j,k;for(i=0;i<3;i++){for(j=0;j<3;j++){for(k=0;k<3;k++){C[i][j]+=A[i][k]*B[k][j];}}}return C;}
+function two(n){return (n<10?'0':'')+n;}
+function groupInt(n){var s=Math.round(n).toString(),o='',c=0;for(var i=s.length-1;i>=0;i--){o=s[i]+o;c++;if(c===3&&i>0){o=' '+o;c=0;}}return o;}
+function clamp(v,a,b){return v<a?a:(v>b?b:v);}
+
+/* ===== Terre ===== */
+function DAYSS(date){return (date.getTime()/1000 - Date.UTC(2000,0,1,12,0,0)/1000)/DAY_S;}
+function earthHelio(date){ var d=DAYSS(date); var L=(280.460+0.9856474*d)*D2R, g=(357.528+0.9856003*d)*D2R; var lambda=L+(1.915*Math.sin(g)+0.020*Math.sin(2*g))*D2R; var r=1.00014-0.01671*Math.cos(g)-0.00014*Math.cos(2*g); return {x:r*Math.cos(lambda),y:r*Math.sin(lambda),z:0,r:r}; }
+function earthState(date){ var dt=300/86400,p=earthHelio(date),f=earthHelio(new Date(date.getTime()+dt*DAY_S*1000)),b=earthHelio(new Date(date.getTime()-dt*DAY_S*1000)); var vx=(f.x-b.x)/(2*dt),vy=(f.y-b.y)/(2*dt),vz=0; return {r:p,v:{x:vx,y:vy,z:vz}}; }
+
+/* ===== Lune elliptique ===== */
+var moonCtx=null;
+function moonDefault(){ return {a_km:384400.0,e:0.0549,i_deg:5.145,Omega_deg:125.08,omega_deg:318.15,T_days:27.321661,epochISO:"2000-01-01T12:00:00",M0_deg:0.0}; }
+function buildMoonCtx(par){ var a_AU=par.a_km/AU_KM, n=TWO_PI/par.T_days; var Q=M33(Rz(par.Omega_deg*D2R), M33(Rx(par.i_deg*D2R), Rz(par.omega_deg*D2R))); var epoch=new Date(par.epochISO+'Z'); return {a:a_AU,e:par.e,n:n,Q:Q,epoch:epoch,M0:par.M0_deg*D2R}; }
+function keplerE(M,e){ M=Math.atan2(Math.sin(M),Math.cos(M)); var E=M+(e*Math.sin(M))/(1 - Math.sin(M+M)+Math.sin(M)); for(var i=0;i<20;i++){ var f=E-e*Math.sin(E)-M, df=1-e*Math.cos(E), d=f/df; E-=d; if(Math.abs(d)<1e-12) break; } return E; }
+function moonState(date){ var d=(date-moonCtx.epoch)/1000/DAY_S, M=moonCtx.M0+moonCtx.n*d, E=keplerE(M,moonCtx.e); var cE=Math.cos(E), sE=Math.sin(E), fac=Math.sqrt(1-moonCtx.e*moonCtx.e); var r_pf=[moonCtx.a*(cE-moonCtx.e), moonCtx.a*(fac*sE), 0]; var dEdt=moonCtx.n/(1-moonCtx.e*cE), v_pf=[-moonCtx.a*sE*dEdt, moonCtx.a*fac*cE*dEdt, 0]; var r_geo=Mx(moonCtx.Q,r_pf), v_geo=Mx(moonCtx.Q,v_pf); var E0=earthState(date); return { r:{x:E0.r.x+r_geo[0], y:E0.r.y+r_geo[1], z:E0.r.z+r_geo[2]}, v:{x:E0.v.x+v_geo[0], y:E0.v.y+v_geo[1], z:E0.v.z+v_geo[2]}, E:E0, dkm:Math.sqrt(r_geo[0]*r_geo[0]+r_geo[1]*r_geo[1]+r_geo[2]*r_geo[2])*AU_KM }; }
+function moonEllipseForEarth(Epos){ var N=220,xs=[],ys=[],zs=[],fac=Math.sqrt(1-moonCtx.e*moonCtx.e); for(var i=0;i<=N;i++){ var EE=TWO_PI*i/N,cE=Math.cos(EE),sE=Math.sin(EE); var r_pf=[moonCtx.a*(cE-moonCtx.e), moonCtx.a*(fac*sE), 0], v=Mx(moonCtx.Q,r_pf); xs.push(Epos.x+v[0]); ys.push(Epos.y+v[1]); zs.push(Epos.z+v[2]); } return {x:xs,y:ys,z:zs}; }
+
+/* ===== ATLAS hyperbolique ===== */
+function H_from_time(dt,e,a){ var tau=Math.sqrt(Math.pow(-a,3)/mu), sgn=dt>=0?1:-1, H=sgn*Math.log(2*Math.abs(dt)+1e-6); for(var it=0;it<60;it++){ var f=tau*(e*Math.sinh(H)-H)-dt, df=tau*(e*Math.cosh(H)-1), step=f/df; H-=step; if(Math.abs(step)<1e-10) break; } return H; }
+function orbitContext(p){ var a=-p.q/(p.e-1), Q=M33(Rz(p.Omega*D2R), M33(Rx(p.inc*D2R), Rz(p.omega*D2R))), tp=new Date(p.tpISO+'Z'); return {e:p.e,q:p.q,inc:p.inc,Omega:p.Omega,omega:p.omega,a:a,p:p.q*(1+p.e),Q:Q,tp:tp}; }
+function cometState(ctx,d){ var H=H_from_time(d,ctx.e,ctx.a), tanu2=Math.sqrt((ctx.e+1)/(ctx.e-1))*Math.tanh(H/2), nu=2*Math.atan(tanu2); var r=ctx.p/(1+ctx.e*Math.cos(nu)), c=Math.cos(nu), s=Math.sin(nu); var r_pf=[r*c, r*s, 0], fac=Math.sqrt(mu/ctx.p), v_pf=[-fac*s, fac*(ctx.e+c), 0]; var rE=Mx(ctx.Q,r_pf), vE=Mx(ctx.Q,v_pf); return {r:{x:rE[0],y:rE[1],z:rE[2],r:r}, v:{x:vE[0],y:vE[1],z:vE[2]}, nu:nu}; }
+
+/* ===== Calculs ===== */
+function computeEphem(p){
+  var ctx=orbitContext(p), nuMax=Math.acos(-1/ctx.e), N=(window.innerWidth>1200?2200:1600), curve={x:[],y:[],z:[]};
+  for(var j=0;j<N;j++){ var nu=-0.96*nuMax+(1.92*nuMax)*j/(N-1); var r=ctx.p/(1+ctx.e*Math.cos(nu)); var rE=Mx(ctx.Q,[r*Math.cos(nu), r*Math.sin(nu), 0]); curve.x.push(rE[0]); curve.y.push(rE[1]); curve.z.push(rE[2]); }
+  var days=[-120,-90,-60,-30,-10,-5,-1,0,1,5,10,30,60,90,120], markers=[];
+  for(var k2=0;k2<days.length;k2++){ var d=days[k2], CS=cometState(ctx,d); var vAUd=Math.sqrt(CS.v.x*CS.v.x+CS.v.y*CS.v.y+CS.v.z*CS.v.z), vKms=vAUd*(AU_KM/DAY_S); var date=new Date(ctx.tp.getTime()+d*DAY_S*1000); markers.push({date:date.toISOString().slice(0,10),dt:d,r:CS.r.r,nu:CS.nu*R2D,v:vKms,x:CS.r.x,y:CS.r.y,z:CS.r.z}); }
+  var rp=Mx(ctx.Q,[ctx.q,0,0]); return {curve:curve,markers:markers,perihelion:{x:rp[0],y:rp[1],z:rp[2]},ctx:ctx};
+}
+function computeEarthApproach(p,rangeDays){ var ctx=orbitContext(p), best={dist:1e9,date:null,e:null,c:null,d:null}; for(var d=-rangeDays; d<=rangeDays; d+=0.5){ var date=new Date(ctx.tp.getTime()+d*DAY_S*1000); var E=earthHelio(date), C=cometState(ctx,d).r; var dx=C.x-E.x,dy=C.y-E.y,dz=C.z-E.z, dist=Math.sqrt(dx*dx+dy*dy+dz*dz); if(dist<best.dist) best={dist:dist,date:date,e:E,c:{x:C.x,y:C.y,z:C.z},d:d}; } best.ctx=ctx; return best; }
+function distAUAt(ctx,d){ var date=new Date(ctx.tp.getTime()+d*DAY_S*1000), E=earthHelio(date), C=cometState(ctx,d).r; var dx=C.x-E.x,dy=C.y-E.y,dz=C.z-E.z, au=Math.sqrt(dx*dx+dy*dy+dz*dz); return {au:au,date:date,E:E,C:C}; }
+function refineClosest(best){ var ctx=best.ctx, a=best.d-5,b=best.d+5; function f(x){return distAUAt(ctx,x).au;} for(var i=0;i<80;i++){ var m1=a+(b-a)/3, m2=b-(b-a)/3; if(f(m1)<f(m2)) b=m2; else a=m2; } var d=(a+b)/2,S=distAUAt(ctx,d), ES=earthState(S.date), CS=cometState(ctx,d); var dvx=CS.v.x-ES.v.x,dvy=CS.v.y-ES.v.y,dvz=CS.v.z; var vRelKms=Math.sqrt(dvx*dvx+dvy*dvy+dvz*dvz)*(AU_KM/DAY_S); var vObjKms=Math.sqrt(CS.v.x*CS.v.x+CS.v.y*CS.v.y+CS.v.z*CS.v.z)*(AU_KM/DAY_S); return {ctx:ctx,dist:S.au,date:S.date,e:S.E,c:{x:S.C.x,y:S.C.y,z:S.C.z},d:d,vRelKms:vRelKms,vObjKms:vObjKms}; }
+function computeDistanceSeries(ctx,range){
+  var x=[],y=[],ykm=[],bestAU=1e9,bestIdx=-1;
+  for(var d=-range; d<=range; d+=1){
+    var date=new Date(ctx.tp.getTime()+d*DAY_S*1000), E=earthHelio(date), C=cometState(ctx,d).r;
+    var dx=C.x-E.x,dy=C.y-E.y,dz=C.z-E.z, au=Math.sqrt(dx*dx+dy*dy+dz*dz);
+    x.push(date.toISOString()); y.push(au); ykm.push(au*AU_KM/1e6);
+    if(au<bestAU){bestAU=au;bestIdx=x.length-1;}
+  }
+  var ymin=1e9,ymax=-1e9,ymin2=1e9,ymax2=-1e9; for(var i=0;i<y.length;i++){ ymin=Math.min(ymin,y[i]); ymax=Math.max(ymax,y[i]); ymin2=Math.min(ymin2,ykm[i]); ymax2=Math.max(ymax2,ykm[i]); }
+  return {x:x,y:y,ykm:ykm,ymin:ymin,ymax:ymax,ymin2:ymin2,ymax2:ymax2,minIndex:bestIdx,minDate:new Date(x[bestIdx]),minAU:bestAU};
+}
+
+/* --- HOTFIX: proximité Terre en pourcentage (0..1) --- */
+function computeProximityPct(date, ctxOpt, minAUOpt, farAUOpt){
+  try{
+    var ctx = ctxOpt || (window.lastBest && window.lastBest.ctx);
+    if(!ctx) return 0;
+    var dDays = (date - ctx.tp) / 1000 / DAY_S;
+    var now = distAUAt(ctx, dDays);
+    var nowAU = now.au;
+
+    var minAU = (typeof minAUOpt === 'number')
+      ? minAUOpt
+      : (window.lastBest && typeof window.lastBest.dist === 'number'
+         ? window.lastBest.dist
+         : nowAU);
+
+    var farAU;
+    if (typeof farAUOpt === 'number') {
+      farAU = farAUOpt;
+    } else if (window.distSeries && Array.isArray(window.distSeries.y) && window.distSeries.y.length) {
+      farAU = window.distSeries.y.reduce(function(m,v){ return v>m?v:m; }, 0);
+    } else {
+      farAU = Math.max(minAU*3, nowAU*1.1, minAU + 1e-6);
+    }
+    if (farAU <= minAU) farAU = minAU + 1e-6;
+
+    var pct = (farAU - nowAU) / (farAU - minAU);
+    return clamp(pct, 0, 1);
+  }catch(_){
+    return 0;
+  }
+}
+
+/* ===== 3D ===== */
+function circ(R){var x=[],y=[],z=[];for(var t=0;t<720;t++){var th=t*Math.PI/360;x.push(R*Math.cos(th));y.push(R*Math.sin(th));z.push(0);}return {x:x,y:y,z:z};}
+var sceneReady=false, chartReady=false, dashReady=false, lastBest=null, lastData=null, distSeries=null;
+var scrub={eIdx:-1,cIdx:-1,lIdx:-1}, nowG={eIdx:-1,cIdx:-1,lIdx:-1}, moonCur={mIdx:-1,lIdx:-1,rIdx:-1}, moonNow={mIdx:-1,lIdx:-1,rIdx:-1};
+function drawPlot(data){
+  var traces=[], ear=circ(1.0), ven=circ(0.723), mar=circ(1.524);
+  traces.push({type:"scatter3d",mode:"lines",x:ven.x,y:ven.y,z:ven.z,name:"Venus",line:{width:2,color:"rgba(125,211,252,0.6)"}});
+  traces.push({type:"scatter3d",mode:"lines",x:ear.x,y:ear.y,z:ear.z,name:"Terre",line:{width:7,color:"rgba(255,255,255,0.95)"}});
+  traces.push({type:"scatter3d",mode:"lines",x:mar.x,y:mar.y,z:mar.z,name:"Mars",line:{width:2,color:"rgba(110,231,183,0.6)"}});
+  traces.push({type:"scatter3d",mode:"lines",name:"3I/ATLAS - hyperbole",x:data.curve.x,y:data.curve.y,z:data.curve.z,line:{width:6,color:"rgba(0,255,208,1)"}});
+  var mx=[],my=[],mz=[]; for(var i=0;i<data.markers.length;i++){ mx.push(data.markers[i].x); my.push(data.markers[i].y); mz.push(data.markers[i].z); }
+  traces.push({type:"scatter3d",mode:"markers",x:mx,y:my,z:mz,name:"Repères",marker:{size:3,color:"rgba(125,249,255,0.9)"}});
+  traces.push({type:"scatter3d",mode:"markers+text",x:[0],y:[0],z:[0],text:["Soleil"],textposition:"bottom center",name:"Soleil",marker:{size:4,color:"#ffd166"}});
+  traces.push({type:"scatter3d",mode:"markers+text",x:[data.perihelion.x],y:[data.perihelion.y],z:[data.perihelion.z],text:["Perihelie"],textposition:"top center",name:"Perihelie",marker:{size:5,color:"#f59e0b"}});
+  var idxE=traces.length; traces.push({type:"scatter3d",mode:"markers+text",x:[],y:[],z:[],text:["Cur Terre"],textposition:"top center",name:"Cur Terre",marker:{size:6,color:"#ffffff"}});
+  var idxC=traces.length; traces.push({type:"scatter3d",mode:"markers+text",x:[],y:[],z:[],text:["Cur ATLAS"],textposition:"top center",name:"Cur ATLAS",marker:{size:6,color:"#7df9ff"}});
+  var idxL=traces.length; traces.push({type:"scatter3d",mode:"lines",x:[],y:[],z:[],name:"Cur Δ",line:{width:2,dash:"dot",color:"rgba(255,255,255,0.7)"}});
+  var idxMcur=traces.length; traces.push({type:"scatter3d",mode:"markers+text",x:[],y:[],z:[],text:["Lune @"],textposition:"top center",name:"Lune (CUR)",marker:{size:5,color:"#c5bdfd"}});
+  var idxMLcur=traces.length; traces.push({type:"scatter3d",mode:"lines",x:[],y:[],z:[],name:"Δ TL (CUR)",line:{width:2,dash:"dot",color:"rgba(197,189,253,0.8)"}});
+  var idxMRcur=traces.length; traces.push({type:"scatter3d",mode:"lines",x:[],y:[],z:[],name:"Orb Lune (CUR)",line:{width:1,color:"rgba(197,189,253,0.35)"}});
+  scrub={eIdx:idxE,cIdx:idxC,lIdx:idxL}; moonCur={mIdx:idxMcur,lIdx:idxMLcur,rIdx:idxMRcur};
+  var idxEN=traces.length; traces.push({type:"scatter3d",mode:"markers+text",x:[],y:[],z:[],text:["Terre NOW"],textposition:"top center",name:"Terre (NOW)",marker:{size:8,color:"#ffffff"}});
+  var idxCN=traces.length; traces.push({type:"scatter3d",mode:"markers+text",x:[],y:[],z:[],text:["ATLAS NOW"],textposition:"top center",name:"ATLAS (NOW)",marker:{size:8,color:"#00ffd0"}});
+  var idxLN=traces.length; traces.push({type:"scatter3d",mode:"lines",x:[],y:[],z:[],name:"Δ NOW",line:{width:2,color:"rgba(255,255,255,0.55)"}});
+  var idxMN=traces.length; traces.push({type:"scatter3d",mode:"markers+text",x:[],y:[],z:[],text:["Lune NOW"],textposition:"top center",name:"Lune (NOW)",marker:{size:6,color:"#c5bdfd"}});
+  var idxMLN=traces.length; traces.push({type:"scatter3d",mode:"lines",x:[],y:[],z:[],name:"Δ TL (NOW)",line:{width:2,color:"rgba(197,189,253,0.9)"}});
+  var idxMRN=traces.length; traces.push({type:"scatter3d",mode:"lines",x:[],y:[],z:[],name:"Orb Lune (NOW)",line:{width:1.5,color:"rgba(197,189,253,0.5)"}});
+  nowG={eIdx:idxEN,cIdx:idxCN,lIdx:idxLN}; moonNow={mIdx:idxMN,lIdx:idxMLN,rIdx:idxMRN};
+
+  var layout={paper_bgcolor:"rgba(0,0,0,0)",plot_bgcolor:"rgba(0,0,0,0)",
+    scene:{xaxis:{title:"x (AU)",gridcolor:"#1b2e4e",zerolinecolor:"#1b2e4e",color:"#cfe7ff"},
+           yaxis:{title:"y (AU)",gridcolor:"#1b2e4e",zerolinecolor:"#1b2e4e",color:"#cfe7ff"},
+           zaxis:{title:"z (AU)",gridcolor:"#1b2e4e",zerolinecolor:"#1b2e4e",color:"#cfe7ff"},
+           aspectmode:"manual",aspectratio:{x:1.0,y:1.0,z:0.35},
+           camera:{projection:{type:"perspective"},eye:{x:1.9,y:1.7,z:0.72}}},
+    margin:{l:0,r:0,t:0,b:0},showlegend:false};
+  var config={displaylogo:false,responsive:true,scrollZoom:true,doubleClick:"reset",
+              toImageButtonOptions:{format:"png",scale:(window.devicePixelRatio>1?2:1)}};
+  Plotly.newPlot("scene",traces,layout,config).then(function(){ sceneReady=true; startRealtime(); jumpToNow(); });
+}
+
+/* ===== Scrubber / NOW ===== */
+var winDays=180, baseStepDays=1/24, animSpeed=1, animTimer=null, animPlaying=false, followNow=true, safeMode=false;
+function scrubToDays(d){
+  if(!sceneReady||!lastBest||!lastBest.ctx) return;
+  var date=new Date(lastBest.ctx.tp.getTime()+d*DAY_S*1000);
+  var ES=earthState(date), CS=cometState(lastBest.ctx,d);
+  Plotly.restyle("scene",{x:[[ES.r.x]],y:[[ES.r.y]],z:[[0]]},[scrub.eIdx]);
+  Plotly.restyle("scene",{x:[[CS.r.x]],y:[[CS.r.y]],z:[[CS.r.z]]},[scrub.cIdx]);
+  Plotly.restyle("scene",{x:[[ES.r.x,CS.r.x]],y:[[ES.r.y,CS.r.y]],z:[[0,CS.r.z]]},[scrub.lIdx]);
+
+  var MS=moonState(date), ring=moonEllipseForEarth(ES.r);
+  Plotly.restyle("scene",{x:[[MS.r.x]],y:[[MS.r.y]],z:[[MS.r.z]]},[moonCur.mIdx]);
+  Plotly.restyle("scene",{x:[[ES.r.x,MS.r.x]],y:[[ES.r.y,MS.r.y]],z:[[0,MS.r.z]]},[moonCur.lIdx]);
+  Plotly.restyle("scene",{x:[[ring.x]],y:[[ring.y]],z:[[ring.z]]},[moonCur.rIdx]);
+
+  var cx=(ES.r.x+CS.r.x)/2,cy=(ES.r.y+CS.r.y)/2,cz=(0+CS.r.z)/2,span=Math.max(Math.abs(ES.r.x-cx),Math.abs(CS.r.x-cx),Math.abs(ES.r.y-cy),Math.abs(CS.r.y-cy),Math.abs(CS.r.z-cz)); var R=Math.max(1.2*span,0.6);
+  Plotly.relayout("scene",{"scene.xaxis.range":[cx-R,cx+R],"scene.yaxis.range":[cy-R,cy+R],"scene.zaxis.range":[cz-R*0.35,cz+R*0.35]});
+
+  var dx=CS.r.x-ES.r.x,dy=CS.r.y-ES.r.y,dz=CS.r.z-ES.r.z, au=Math.sqrt(dx*dx+dy*dy+dz*dz), km=au*AU_KM;
+  var vObjAUd=Math.sqrt(CS.v.x*CS.v.x+CS.v.y*CS.v.y+CS.v.z*CS.v.z), vObjKms=vObjAUd*(AU_KM/DAY_S);
+  var dvx=CS.v.x-ES.v.x,dvy=CS.v.y-ES.v.y,dvz=CS.v.z-ES.v.z, vRelAUd=Math.sqrt(dvx*dvx+dvy*dvy+dvz*dvz), vRelKms=vRelAUd*(AU_KM/DAY_S);
+  document.getElementById("timeRead").textContent="Curseur: "+date.toISOString().slice(0,19).replace("T"," ")+" | dt "+(d>=0?"+":"")+d.toFixed(2)+" j | "+au.toFixed(4)+" AU (~ "+(km/1e6).toFixed(2)+" Mkm) | v "+vObjKms.toFixed(1)+" km/s | v_rel "+vRelKms.toFixed(1)+" km/s";
+  updateScrubberDistance(date,au);
+}
+function startRealtime(){
+  function tick(){
+    if(!sceneReady||!lastBest||!lastBest.ctx) return;
+    var now=new Date(), d=(now-lastBest.ctx.tp)/1000/DAY_S, ES=earthState(now), CS=cometState(lastBest.ctx,d);
+    Plotly.restyle("scene",{x:[[ES.r.x]],y:[[ES.r.y]],z:[[0]]},[nowG.eIdx]);
+    Plotly.restyle("scene",{x:[[CS.r.x]],y:[[CS.r.y]],z:[[CS.r.z]]},[nowG.cIdx]);
+    Plotly.restyle("scene",{x:[[ES.r.x,CS.r.x]],y:[[ES.r.y,CS.r.y]],z:[[0,CS.r.z]]},[nowG.lIdx]);
+
+    var MN=moonState(now), ring=moonEllipseForEarth(ES.r);
+    Plotly.restyle("scene",{x:[[MN.r.x]],y:[[MN.r.y]],z:[[MN.r.z]]},[nowG.mIdx||moonNow.mIdx]);
+    Plotly.restyle("scene",{x:[[ES.r.x,MN.r.x]],y:[[ES.r.y,MN.r.y]],z:[[0,MN.r.z]]},[nowG.lmIdx||moonNow.lIdx]);
+    Plotly.restyle("scene",{x:[[ring.x]],y:[[ring.y]],z:[[ring.z]]},[nowG.rmIdx||moonNow.rIdx]);
+
+    if(followNow){
+      var cx=(ES.r.x+CS.r.x)/2, cy=(ES.r.y+CS.r.y)/2, cz=(0+CS.r.z)/2;
+      var span=Math.max(Math.abs(ES.r.x-cx),Math.abs(CS.r.x-cx),Math.abs(ES.r.y-cy),Math.abs(CS.r.y-cy),Math.abs(CS.r.z-cz));
+      var R=Math.max(1.2*span,0.6);
+      Plotly.relayout("scene",{"scene.xaxis.range":[cx-R,cx+R],"scene.yaxis.range":[cy-R,cy+R],"scene.zaxis.range":[cz-R*0.35,cz+R*0.35]});
+    }
+    var dx=CS.r.x-ES.r.x,dy=CS.r.y-ES.r.y,dz=CS.r.z-ES.r.z, au=Math.sqrt(dx*dx+dy*dy+dz*dz), km=au*AU_KM;
+    var vObjAUd=Math.sqrt(CS.v.x*CS.v.x+CS.v.y*CS.v.y+CS.v.z*CS.v.z), vObjKms=vObjAUd*(AU_KM/DAY_S);
+    var dvx=CS.v.x-ES.v.x,dvy=CS.v.y-ES.v.y,dvz=CS.v.z-ES.v.z, vRelAUd=Math.sqrt(dvx*dvx+dvy*dvy+dvz*dvz), vRelKms=vRelAUd*(AU_KM/DAY_S);
+
+    document.getElementById("hudDist").textContent="NOW: t="+now.toISOString().slice(0,19).replace("T"," ")+" | Δ Terre: "+groupInt(km)+" km | v ~ "+vObjKms.toFixed(1)+" km/s | v_rel ~ "+vRelKms.toFixed(1)+" km/s";
+    document.getElementById("bigDelta").textContent="Delta Terre NOW: "+groupInt(km)+" km";
+    document.getElementById("bigSpeed").textContent="Vitesse héliocentrique NOW: "+vObjKms.toFixed(2)+" km/s";
+    document.getElementById("bigVrel").textContent="Vitesse relative Terre NOW: "+vRelKms.toFixed(2)+" km/s";
+
+    document.getElementById("tileDist").textContent = groupInt(km)+" km";
+    document.getElementById("tileDistAU").textContent = au.toFixed(6)+" AU";
+    document.getElementById("tileSpeed").textContent = vObjKms.toFixed(2)+" km/s";
+    document.getElementById("tileVrel").textContent = vRelKms.toFixed(2)+" km/s";
+
+    var pct = computeProximityPct(now) * 100;
+    if(dashReady){ Plotly.restyle('tileGauge', {value:[[pct]]}, [0]); }
+
+    updateUTCtiles(now);
+    updateCountdownTiles(now);
+    updateDistanceNow();
+  }
+  tick(); setInterval(tick,1000);
+}
+
+/* ===== Graphe (amélioré) ===== */
+var highlightDays = 7, shapesHL = [];
+function drawDistanceChart(best){
+  distSeries=computeDistanceSeries(best.ctx, winDays);
+  var now=new Date(), E0=earthHelio(now), C0=cometState(best.ctx,(now-best.ctx.tp)/1000/DAY_S).r;
+  var dx=C0.x-E0.x,dy=C0.y-E0.y,dz=C0.z-E0.z, nowAU=Math.sqrt(dx*dx+dy*dy+dz*dz);
+
+  var hoverCommon = '<b>%{x|%Y-%m-%d %H:%M UTC}</b><br>Δ Terre: %{y:.6f} AU<extra></extra>';
+
+  var traces=[
+    {type:"scatter",mode:"lines",name:"Distance AU",x:distSeries.x,y:distSeries.y,line:{width:3},hovertemplate:hoverCommon},
+    {type:"scatter",mode:"lines",name:"Approche min",x:[best.date.toISOString(),best.date.toISOString()],y:[distSeries.ymin,distSeries.ymax],line:{dash:"dot",width:2}},
+    {type:"scatter",mode:"markers",name:"NOW",x:[now.toISOString()],y:[nowAU],marker:{size:10},hovertemplate:hoverCommon},
+    {type:"scatter",mode:"lines",name:"Distance Mkm",x:distSeries.x,y:distSeries.ykm,yaxis:"y2",line:{width:3},visible:true,
+      hovertemplate:'<b>%{x|%Y-%m-%d %H:%M UTC}</b><br>Δ Terre: %{y:.2f} Mkm<extra></extra>'},
+    {type:"scatter",mode:"markers",name:"NOW (Mkm)",x:[now.toISOString()],y:[nowAU*AU_KM/1e6],yaxis:"y2",marker:{size:10},visible:true,
+      hovertemplate:'<b>%{x|%Y-%m-%d %H:%M UTC}</b><br>Δ Terre: %{y:.2f} Mkm<extra></extra>'},
+    {type:"scatter",mode:"markers",name:"Curseur",x:[best.date.toISOString()],y:[best.dist],marker:{size:9},hovertemplate:hoverCommon},
+    {type:"scatter",mode:"markers",name:"Curseur (Mkm)",x:[best.date.toISOString()],y:[best.dist*AU_KM/1e6],yaxis:"y2",marker:{size:9},visible:true,
+      hovertemplate:'<b>%{x|%Y-%m-%d %H:%M UTC}</b><br>Δ Terre: %{y:.2f} Mkm<extra></extra>'}
+  ];
+
+  shapesHL = buildHighlightShapes(best);
+
+  var layout={margin:{l:60,r:60,t:8,b:40},paper_bgcolor:"rgba(0,0,0,0)",plot_bgcolor:"rgba(0,0,0,0)",
+    xaxis:{title:"Date (UTC)",gridcolor:"#1b2e4e",zerolinecolor:"#1b2e4e",color:"#cfe7ff",type:"date",
+           rangeslider:{visible:true,thickness:0.08,bgcolor:"rgba(12,28,50,0.9)"}},
+    yaxis:{title:"Distance Terre (AU)",gridcolor:"#1b2e4e",zerolinecolor:"#1b2e4e",color:"#cfe7ff",rangemode:"tozero"},
+    yaxis2:{title:"Distance Terre (Mkm)",overlaying:"y",side:"right",gridcolor:"#1b2e4e",zerolinecolor:"#1b2e4e",color:"#cfe7ff",
+            rangemode:"tozero",showgrid:false,showticklabels:true},
+    shapes: shapesHL,
+    legend:{orientation:"h",x:0.02,y:1.06,font:{color:"#cfe7ff"}}
+  };
+  Plotly.newPlot("distChart",traces,layout,{displaylogo:false,responsive:true}).then(function(){ chartReady=true; applyKmAxis(); applyLogAxis(); });
+}
+function buildHighlightShapes(best){
+  var d0 = new Date(best.date.getTime() - highlightDays*DAY_S*1000).toISOString();
+  var d1 = new Date(best.date.getTime() + highlightDays*DAY_S*1000).toISOString();
+  return [{
+    type:"rect", xref:"x", yref:"paper", x0:d0, x1:d1, y0:0, y1:1,
+    fillcolor:"rgba(0,255,208,0.08)", line:{width:0}
+  },{
+    type:"line", xref:"x", yref:"y", x0:best.date.toISOString(), x1:best.date.toISOString(),
+    y0:distSeries.ymin, y1:distSeries.ymax, line:{color:"rgba(125,249,255,0.9)", width:2, dash:"dot"}
+  }];
+}
+function refreshHighlight(best){
+  if(!chartReady) return;
+  shapesHL = buildHighlightShapes(best);
+  Plotly.relayout("distChart",{shapes: shapesHL});
+}
+function updateScrubberDistance(date,au){
+  if(!chartReady) return;
+  Plotly.restyle("distChart",{x:[[date.toISOString()]],y:[[au]]},[5]);
+  Plotly.restyle("distChart",{x:[[date.toISOString()]],y:[[au*AU_KM/1e6]]},[6]);
+}
+function updateDistanceNow(){
+  if(!chartReady||!lastBest||!lastBest.ctx) return;
+  var now=new Date(), E=earthHelio(now), C=cometState(lastBest.ctx,(now-lastBest.ctx.tp)/1000/DAY_S).r;
+  var dx=C.x-E.x,dy=C.y-E.y,dz=C.z-E.z, au=Math.sqrt(dx*dx+dy*dy+dz*dz);
+  Plotly.restyle("distChart",{x:[[now.toISOString()]],y:[[au]]},[2]);
+  Plotly.restyle("distChart",{x:[[now.toISOString()]],y:[[au*AU_KM/1e6]]},[4]);
+}
+function applyKmAxis(){
+  if(!chartReady) return;
+  var km=document.getElementById("kmCheck").checked;
+  Plotly.restyle("distChart",{visible:km?[false]:[true]},[0]);
+  Plotly.restyle("distChart",{visible:km?[false]:[true]},[2]);
+  Plotly.restyle("distChart",{visible:km?[true]:[false]},[3]);
+  Plotly.restyle("distChart",{visible:km?[true]:[false]},[4]);
+  Plotly.restyle("distChart",{visible:km?[false]:[true]},[5]);
+  Plotly.restyle("distChart",{visible:km?[true]:[false]},[6]);
+  Plotly.relayout("distChart",{"yaxis2.showticklabels":km,"yaxis2.showgrid":km});
+}
+function applyLogAxis(){
+  if(!chartReady) return;
+  var log=document.getElementById('logY').checked;
+  Plotly.relayout("distChart", {"yaxis.type": log?"log":"linear"});
+}
+
+/* ===== HUD / Dashboard helpers ===== */
+function startUTCClock(){
+  var el=document.getElementById("utcClock");
+  function up(){ var n=new Date(); el.textContent="UTC: "+n.toISOString().slice(0,19).replace("T"," "); }
+  up(); setInterval(up,1000);
+}
+function updateUTCtiles(now){
+  var dd = now.toISOString().slice(0,10);
+  var tt = now.toISOString().slice(11,19);
+  document.getElementById('tileUTC').textContent = tt;
+  document.getElementById('tileDate').textContent = dd;
+}
+function startHudCountdown(){
+  var elH=document.getElementById("hudHours"), elM=document.getElementById("hudMinutes"), elT=document.getElementById("hudTarget"), elX=document.getElementById("hudExact");
+  function fmt(d){return d.toISOString().slice(0,16).replace("T"," "); }
+  function tick(){
+    if(!lastBest||!lastBest.date) return;
+    var bd=lastBest.date; elT.textContent="Approche (UTC): "+fmt(bd);
+    var now=new Date(), s=(bd-now)/1000, diff=Math.abs(s);
+    var totalH=Math.floor(diff/3600), days=Math.floor(diff/86400), hours=Math.floor((diff%86400)/3600), minutes=Math.floor((diff%3600)/60), seconds=Math.floor(diff%60);
+    elH.textContent=(s>=0?totalH:-totalH);
+    elM.textContent=":"+two(minutes)+":"+two(seconds);
+    elX.textContent="J"+(s>=0?"-":"+")+days+" "+two(hours)+":"+two(minutes)+":"+two(seconds);
+  }
+  tick(); setInterval(tick,1000);
+}
+function updateCountdownTiles(now){
+  if(!lastBest||!lastBest.date) return;
+  var target = lastBest.date;
+  var s = Math.floor((target - now)/1000);
+  var sign = s>=0? -1 : 1; // J- quand à venir, J+ quand passé
+  var sAbs = Math.abs(s);
+  var d = Math.floor(sAbs/86400);
+  var h = Math.floor((sAbs%86400)/3600);
+  var m = Math.floor((sAbs%3600)/60);
+  document.getElementById('tileCountdown').textContent = "J"+(sign<0?'-':'+')+d+" "+two(h)+":"+two(m);
+  document.getElementById('tileEta').textContent = "Approche min (UTC): "+target.toISOString().slice(0,16).replace('T',' ');
+}
+function drawGauges(){
+  var pct = computeProximityPct(new Date()) * 100;
+  var data=[{
+    type:"indicator",
+    mode:"gauge+number",
+    value:pct,
+    number:{suffix:"%"},
+    gauge:{
+      axis:{range:[0,100]},
+      bar:{color:"#00ffd0"},
+      steps:[
+        {range:[0,25], color:"rgba(0,255,208,0.10)"},
+        {range:[25,50], color:"rgba(0,255,208,0.18)"},
+        {range:[50,75], color:"rgba(0,255,208,0.26)"},
+        {range:[75,100], color:"rgba(0,255,208,0.34)"}
+      ],
+      threshold:{line:{color:"#7df9ff",width:2}, thickness:0.6, value:90}
+    },
+    domain:{x:[0,1], y:[0,1]},
+    title:{text:"Proximité"}
+  }];
+  var layout={margin:{l:10,r:10,t:10,b:10},paper_bgcolor:"rgba(0,0,0,0)",plot_bgcolor:"rgba(0,0,0,0)"};
+  Plotly.newPlot('tileGauge', data, layout, {displayModeBar:false,responsive:true}).then(function(){ dashReady=true; });
+}
+function initDashboard(){
+  drawGauges();
+  updateUTCtiles(new Date());
+  updateCountdownTiles(new Date());
+}
+
+/* ===== Animation ===== */
+function startAnim(){ if(animTimer) return; animTimer=setInterval(stepAnim,100); animPlaying=true; document.getElementById("playBtn").textContent="Pause"; }
+function stopAnim(){ if(animTimer){ clearInterval(animTimer); animTimer=null; } animPlaying=false; document.getElementById("playBtn").textContent="Lecture"; }
+function stepAnim(){ var tr=document.getElementById("timeRange"); if(!tr) return; var v=parseFloat(tr.value), min=parseFloat(tr.min), max=parseFloat(tr.max); var step=baseStepDays*animSpeed; v+=step; if(v>max){ v=min; } tr.value=v.toString(); scrubToDays(v); }
+
+/* ===== Import manuel (coller / fichier) ===== */
+function jdToDate(jd){ var ms=(jd-2440587.5)*86400000; return new Date(ms); }
+function parseManualInput(s){
+  if(!s||!s.trim()) throw new Error('Zone vide');
+  { // simple key=value
+    const o={}, re=/^\s*([a-zA-Z_]+)\s*=\s*([^\n\r#;]+)\s*$/gm;
+    let m; while((m=re.exec(s))){ o[m[1]]=m[2].trim(); }
+    if(Object.keys(o).length){
+      return {
+        e:num(o.e), q:num(o.q), inc:num(o.inc), Omega:num(o.Omega),
+        omega:num(o.omega), tpISO:iso(o.tpISO||o.tp||o.Tp||o.t_peri||o.tp_cal)
+      };
+    }
+  }
+  const t=s.trim();
+  if((t.startsWith('{')&&t.endsWith('}'))||(t.startsWith('[')&&t.endsWith(']'))){
+    const j=JSON.parse(t);
+    const el=(j&&j.orbit&&j.orbit.elements)||(j&&j.orbital_elements)||(j&&j.elements)
+           ||(j&&j.results&&j.results[0])||(j&&j.orbits&&j.orbits[0]);
+    if(el){
+      return {
+        e:num(el.e||el.ecc||el.eccentricity),
+        q:num(el.q_au||el.q||el.perihelion_distance||el.q_au_1),
+        inc:num(el.i||el.i_deg||el.incl||el.inclination),
+        Omega:num(el.om||el.Omega||el.node||el.long_of_asc_node_deg),
+        omega:num(el.w||el.omega||el.arg_per||el.arg_peri||el.arg_of_perihelion_deg),
+        tpISO:iso(el.tp_tdb||el.Tp_tdb||el.tp||el.t_peri||el.t_perihelion||el.t_perihelion_jd||el.perih_time_tdb||el.tp_cal)
+      };
+    }
+  }
+  throw new Error('Format non reconnu');
+  function num(x){ const n=parseFloat(x); if(!isFinite(n)) throw new Error('Nombre invalide: '+x); return n; }
+  function iso(x){ if(!x) throw new Error('tp manquant'); const d=(typeof x==='number')?jdToDate(x):new Date(x); if(!isFinite(d.getTime())) throw new Error('Date invalide: '+x); return d.toISOString().slice(0,19); }
+}
+function openManualModal(b){ var md=document.getElementById('manualModal'); if(md) md.style.display=b?'block':'none'; }
+function loadManualFromTextarea(){
+  var ta=document.getElementById('manualText');
+  try{
+    var p=parseManualInput(ta.value);
+    localStorage.setItem('atlas_manual_orbit',JSON.stringify(p));
+    setOfflineLibEntry(document.getElementById('offlineName').value||'MANUEL', p);
+    populateOfflineSelect();
+    selectOffline(document.getElementById('offlineName').value||'MANUEL');
+    toast('Éléments chargés (manuel) → OFFLINE',true);
+    openManualModal(false);
+  }catch(e){ toast('Import manuel: '+(e&&e.message||e),false); }
+}
+
+/* ===== Rebuild + Export ===== */
+function drawFrom(p){
+  var data=computeEphem(p), rough=computeEarthApproach(p,365), best=refineClosest(rough);
+  lastBest=best; lastData=data;
+  setMoonDefaultsToUI(); applyMoonFromUI();
+  startUTCClock(); startHudCountdown();
+  if(sceneReady) Plotly.purge('scene'); drawPlot(data);
+  if(chartReady) Plotly.purge('distChart'); drawDistanceChart(best);
+  renderClosest(best);
+  initDashboard();
+  setTimeout(jumpToNow, 300);
+}
+function rebuildWithParams(p){
+  var data=computeEphem(p), rough=computeEarthApproach(p,365), best=refineClosest(rough);
+  lastBest=best; lastData=data;
+  if(sceneReady){ Plotly.purge('scene'); sceneReady=false; } drawPlot(data);
+  if(chartReady){ Plotly.purge('distChart'); chartReady=false; } drawDistanceChart(best);
+  renderClosest(best);
+  setTimeout(jumpToNow,300);
+}
+function exportDist(fmt){
+  if(!distSeries){ showError('Nothing to export','',0,0); return; }
+  var rows=[]; for(var i=0;i<distSeries.x.length;i++){ rows.push({date:distSeries.x[i],au:distSeries.y[i],mkm:distSeries.ykm[i]}); }
+  if(fmt==='json'){ var blob=new Blob([JSON.stringify(rows,null,2)],{type:'application/json'}); triggerDownload(blob,'atlas_distance.json'); }
+  else{ var csv='date,au,mkm\n'; for(var j=0;j<rows.length;j++){ csv+=rows[j].date+','+rows[j].au+','+rows[j].mkm+'\n'; } var blob2=new Blob([csv],{type:'text/csv'}); triggerDownload(blob2,'atlas_distance.csv'); }
+}
+function triggerDownload(blob,filename){ var a=document.createElement('a'); a.href=URL.createObjectURL(blob); a.download=filename; document.body.appendChild(a); a.click(); setTimeout(function(){ URL.revokeObjectURL(a.href); a.remove(); },500); }
+
+/* ===== Lune UI ===== */
+function setMoonDefaultsToUI(){ var d=moonDefault(); document.getElementById('moonA').value=d.a_km; document.getElementById('moonE').value=d.e; document.getElementById('moonI').value=d.i_deg; document.getElementById('moonOmega').value=d.Omega_deg; document.getElementById('moonSmallOmega').value=d.omega_deg; document.getElementById('moonT').value=d.T_days; document.getElementById('moonEpoch').value='2000-01-01T12:00'; document.getElementById('moonM0').value=d.M0_deg; }
+function applyMoonFromUI(){ var a=parseFloat(document.getElementById('moonA').value), e=parseFloat(document.getElementById('moonE').value), i=parseFloat(document.getElementById('moonI').value); var Om=parseFloat(document.getElementById('moonOmega').value), om=parseFloat(document.getElementById('moonSmallOmega').value); var T=parseFloat(document.getElementById('moonT').value), epochStr=document.getElementById('moonEpoch').value, M0=parseFloat(document.getElementById('moonM0').value); if(!(a>0&&e>=0&&e<1&&T>0)){ showError('Paramètres Lune invalides','',0,0); return; } moonCtx=buildMoonCtx({a_km:a,e:e,i_deg:i,Omega_deg:Om,omega_deg:om,T_days:T,epochISO:epochStr+':00',M0_deg:M0}); if(sceneReady){ jumpToNow(); } }
+
+/* ===== UI wiring ===== */
+function selectOffline(name){
+  var lib=getOfflineLib(); if(!lib[name]){ toast('Objet introuvable en OFFLINE: '+name,false); return; }
+  rebuildWithParams(lib[name]);
+  document.getElementById('liveBadge').textContent='Source: OFFLINE (catalogue) — '+name;
+}
+function wireUI(){
+  document.getElementById('fsBtn').onclick=function(){ var de=document.documentElement; if(!document.fullscreenElement){ de.requestFullscreen&&de.requestFullscreen(); } else { document.exitFullscreen&&document.exitFullscreen(); } };
+  document.getElementById('focusBtn').onclick=function(){ focusApproach(); };
+  document.getElementById('resetViewBtn').onclick=function(){ resetView(); };
+  document.getElementById('uiToggleBtn').onclick=function(){ var box=document.getElementById('ctrlBox'); var hidden=box.classList.toggle('hide'); this.textContent= hidden ? 'UI ▸' : 'UI ◂'; };
+
+  document.getElementById('offlineLoad').onclick=function(){ var name=document.getElementById('offlineSelect').value; selectOffline(name); };
+  document.getElementById('windowSel').onchange=function(){ winDays=parseInt(this.value,10); drawDistanceChart(lastBest); var tr=document.getElementById('timeRange'); tr.min=(-winDays).toString(); tr.max=(winDays).toString(); tr.value=clamp(parseFloat(tr.value),-winDays,winDays).toString(); scrubToDays(parseFloat(tr.value)); };
+  document.getElementById('kmCheck').onchange=function(){ applyKmAxis(); updateDistanceNow(); };
+  document.getElementById('logY').onchange=function(){ applyLogAxis(); };
+  document.getElementById('timeRange').oninput=function(){ scrubToDays(parseFloat(this.value)); };
+  document.getElementById('playBtn').onclick=function(){ if(animPlaying) stopAnim(); else startAnim(); };
+  document.getElementById('speedSel').onchange=function(){ var s=parseFloat(this.value||'1'); animSpeed=(s>0?s:1); };
+  document.getElementById('stepSel').onchange=function(){ var v=parseFloat(this.value||'0.0416666667'); baseStepDays=(v>0?v:1/24); };
+  document.getElementById('followNow').onchange=function(){ followNow=!!this.checked; };
+  document.getElementById('safeMode').onchange=function(){ var panel=document.getElementById('distPanel'); safeMode=!!this.checked; if(panel) panel.style.display=safeMode?'none':'block'; if(safeMode) stopAnim(); };
+  document.getElementById('nowBtn').onclick=function(){ jumpToNow(); };
+  document.getElementById('zoomMinBtn').onclick=function(){
+    if(!lastBest||!chartReady) return;
+    Plotly.relayout("distChart", {"xaxis.range":[
+      new Date(lastBest.date.getTime()-highlightDays*DAY_S*1000).toISOString(),
+      new Date(lastBest.date.getTime()+highlightDays*DAY_S*1000).toISOString()
+    ]});
+  };
+  document.getElementById('applyHL').onclick=function(){ var v=parseInt(document.getElementById('hlDays').value||'7',10); if(v<1) v=1; if(v>60) v=60; highlightDays=v; if(lastBest) refreshHighlight(lastBest); };
+
+  document.getElementById('exportCsv').onclick=function(){ exportDist('csv'); };
+  document.getElementById('exportJson').onclick=function(){ exportDist('json'); };
+
+  document.getElementById('moonApply').onclick=function(){ applyMoonFromUI(); };
+  document.getElementById('moonReset').onclick=function(){ setMoonDefaultsToUI(); applyMoonFromUI(); };
+
+  // OFFLINE
+  document.getElementById('offlineSave').onclick=function(){
+    var nm=(document.getElementById('offlineName').value||'ATLAS').trim();
+    if(!nm){ toast('Nom OFFLINE manquant', false); return; }
+    if(!lastBest||!lastBest.ctx){ toast('Aucune orbite courante à sauver', false); return; }
+    var ctx=lastBest.ctx;
+    var obj={ e:ctx.e, q:ctx.q, inc:ctx.inc, Omega:ctx.Omega, omega:ctx.omega, tpISO:ctx.tp.toISOString().slice(0,19) };
+    setOfflineLibEntry(nm, obj);
+    populateOfflineSelect();
+    toast('Sauvé dans OFFLINE : '+nm, true);
+  };
+  document.getElementById('offlineList').onclick=function(){
+    var txt=offlineListText();
+    document.getElementById('manualText').value = txt;
+    openManualModal(true);
+  };
+
+  // Import manuel
+  document.getElementById('importManual').onclick=function(){ openManualModal(true); };
+  document.getElementById('importSample').onclick=function(){ var t=document.getElementById('manualText'); t.value=['e=6.138559','q=1.356320','inc=175.11310','Omega=322.15740','omega=128.01270','tpISO=2025-10-29T11:35:31'].join('\n'); openManualModal(true); };
+  document.getElementById('manualLoad').onclick=function(){ loadManualFromTextarea(); };
+  document.getElementById('manualClose').onclick=function(){ openManualModal(false); };
+
+  // Import fichier
+  document.getElementById('importFileBtn').onclick=function(){ document.getElementById('importFile').click(); };
+  document.getElementById('importFile').onchange=function(){
+    var f=this.files&&this.files[0]; if(!f) return;
+    var r=new FileReader();
+    r.onload=function(){
+      try{
+        var p=parseManualInput(String(r.result));
+        localStorage.setItem('atlas_manual_orbit',JSON.stringify(p));
+        setOfflineLibEntry(document.getElementById('offlineName').value||'FICHIER', p);
+        populateOfflineSelect(); selectOffline(document.getElementById('offlineName').value||'FICHIER');
+        toast('Éléments chargés depuis fichier',true);
+      }catch(e){ toast('Import fichier: '+(e&&e.message||e),false); }
+    };
+    r.readAsText(f);
+  };
+}
+
+/* ===== Camera helpers ===== */
+function focusApproach(){ if(!sceneReady||!lastBest||!lastBest.date) return; var E=lastBest,cx=(E.e.x+E.c.x)/2,cy=(E.e.y+E.c.y)/2,cz=(0+E.c.z)/2; var span=Math.max(Math.abs(E.e.x-cx),Math.abs(E.c.x-cx),Math.abs(E.e.y-cy),Math.abs(E.c.y-cy),Math.abs(E.c.z-cz)); var R=Math.max(1.2*span,0.6); Plotly.relayout("scene",{"scene.xaxis.range":[cx-R,cx+R],"scene.yaxis.range":[cy-R,cy+R],"scene.zaxis.range":[cz-R*0.35,cz+R*0.35]}); }
+function resetView(){ if(!sceneReady) return; Plotly.relayout("scene",{"scene.xaxis.autorange":true,"scene.yaxis.autorange":true,"scene.zaxis.autorange":true,"scene.camera":{"eye":{x:1.9,y:1.7,z:0.72}}}); }
+
+/* ===== Boot ===== */
+function jumpToNow(){ if(!lastBest||!sceneReady) return; var tr=document.getElementById('timeRange'); if(tr){ var d=(Date.now()-lastBest.ctx.tp)/1000/DAY_S; d=clamp(Math.round(d*2)/2,-winDays,winDays); tr.value=d.toString(); scrubToDays(d); } }
+function renderClosest(best){
+  var km=best.dist*AU_KM, au=best.dist;
+  document.getElementById("closestInfo").textContent="Approche min (UTC): "+best.date.toISOString().slice(0,19).replace("T"," ")+" | Δ="+groupInt(km)+" km ("+au.toFixed(6)+" AU) | v_rel ~ "+best.vRelKms.toFixed(1)+" km/s";
+}
+function boot(){
+  populateOfflineSelect();
+  var lib=getOfflineLib();
+  var seed=lib["3I/ATLAS"]||OFFLINE_LIB_DEFAULT["3I/ATLAS"];
+  drawFrom(seed);
+  document.getElementById('liveBadge').textContent='Source: OFFLINE (catalogue) — 3I/ATLAS';
+}
+if(document.readyState==='loading'){ document.addEventListener('DOMContentLoaded',function(){ boot(); wireUI(); }); } else { boot(); wireUI(); }
+
+})();
+</script>
+</body>
+</html>
