@@ -371,8 +371,9 @@ function kmWithUnit(km){ if(km>=1e9) return (km/1e9).toFixed(2)+' Gkm'; if(km>=1
 
 /* ---------- OFFLINE lib ---------- */
 const OFFLINE_LIB_DEFAULT = {
-  "3I/ATLAS": { e:6.138559, q:1.356320, inc:175.11310, Omega:322.15740, omega:128.01270, tpISO:"2025-10-29T11:35:31" }
+  "3I/ATLAS": { e:6.137350157289094, q:1.356065570996796, inc:175.112857793716, Omega:322.152284964919, omega:128.011608251772, tpISO:"2025-10-29T11:36:17" }
 };
+
 function getOfflineLib(){
   let base = JSON.parse(JSON.stringify(OFFLINE_LIB_DEFAULT));
   try{
