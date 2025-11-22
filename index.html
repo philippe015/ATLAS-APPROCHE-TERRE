@@ -1,955 +1,514 @@
 <!DOCTYPE html>
-<html lang="fr">
+<html lang="fr" class="light">
 <head>
-<meta charset="utf-8">
-<meta http-equiv="Cache-Control" content="no-store" />
-<meta name="viewport" content="width=device-width,initial-scale=1">
-<title>3I/ATLAS – Approche Terre (OFFLINE)</title>
-<link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&display=swap" rel="stylesheet">
-<script src="https://cdn.plot.ly/plotly-2.35.2.min.js"></script>
-<style>
-  :root{ --vh:1vh; --bg:#07162a; --card:#0b1b30; --line:#153d5f; --ink:#e6f2ff; --ink2:#9ac6e8; --accent:#00ffd0; --accent2:#7df9ff; }
-  html,body{height:100%;margin:0}
-  body{background:var(--bg);color:var(--ink);font:16px/1.5 Arial,Helvetica,sans-serif}
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>Calepin SSIAP - v11.3 Themes</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: { extend: { 
+                colors: { darkbg: '#0f172a', darkpaper: '#1e293b' },
+                animation: { 'fade-in': 'fadeIn 0.3s ease-out' },
+                keyframes: { fadeIn: { '0%': { opacity: '0', transform: 'translateY(10px)' }, '100%': { opacity: '1', transform: 'translateY(0)' } } }
+            } }
+        }
+    </script>
+    <style>
+        /* Reset & Base */
+        html, body { overflow-x: hidden; width: 100%; }
+        body { font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; -webkit-tap-highlight-color: transparent; transition: background-color 0.3s, color 0.3s; }
+        
+        .no-scrollbar::-webkit-scrollbar { display: none; }
+        .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+        
+        textarea { 
+            line-height: 1.6; min-height: 60vh;
+            overflow-wrap: break-word; word-wrap: break-word; word-break: break-word;
+            white-space: pre-wrap; width: 100%; max-width: 100%;
+            transition: color 0.3s;
+        }
 
-  /* Top bar + tabs */
-  .topbar{
-    position:sticky;top:0;z-index:1000;background:rgba(8,20,38,0.98);
-    border-bottom:1px solid var(--line);backdrop-filter:blur(6px)
-  }
-  .brand{
-    display:flex;align-items:center;gap:10px;padding:8px 10px;color:#9fe7ff;
-    font-family:'Share Tech Mono',monospace;letter-spacing:1px
-  }
-  .tabs{
-    display:flex;flex-wrap:wrap;gap:8px;padding:8px 10px;border-top:1px solid var(--line)
-  }
-  .tab-btn{
-    appearance:none;border:1px solid var(--line);background:var(--card);color:#cfe7ff;
-    padding:6px 10px;border-radius:9px;cursor:pointer;font:13px/1 ui-monospace,Menlo,monospace
-  }
-  .tab-btn.active{outline:2px solid var(--accent);color:#eaffff}
+        /* --- THEMES PERSONNALISÉS --- */
+        
+        /* 1. FORET (Vert) */
+        html[data-theme="forest"] body { background-color: #ecfdf5; color: #064e3b; }
+        html[data-theme="forest"] aside { background-color: #d1fae5; border-color: #6ee7b7; }
+        html[data-theme="forest"] header { background-color: rgba(209, 250, 229, 0.9); border-color: #6ee7b7; }
+        html[data-theme="forest"] .paper-sheet { background-color: #ffffff; border: 1px solid #a7f3d0; box-shadow: 0 4px 6px rgba(5, 150, 105, 0.1); }
+        html[data-theme="forest"] textarea, html[data-theme="forest"] input { color: #065f46; }
+        html[data-theme="forest"] .icon-btn { color: #047857; }
 
-  /* Sections (tab panels) */
-  .panel{display:none;padding:10px}
-  .panel.active{display:block}
+        /* 2. NOCTURNE (Rouge/Noir - Vision de nuit) */
+        html[data-theme="night"] body { background-color: #000000; color: #ef4444; }
+        html[data-theme="night"] aside { background-color: #111111; border-color: #450a0a; }
+        html[data-theme="night"] header { background-color: rgba(0, 0, 0, 0.9); border-color: #450a0a; }
+        html[data-theme="night"] .paper-sheet { background-color: #0a0a0a; border: 1px solid #7f1d1d; box-shadow: none; }
+        html[data-theme="night"] textarea, html[data-theme="night"] input { color: #f87171; background: transparent; }
+        html[data-theme="night"] ::placeholder { color: #7f1d1d; }
+        html[data-theme="night"] button { color: #ef4444; border-color: #7f1d1d; }
+        html[data-theme="night"] .bg-white { background-color: #111; color: #ef4444; border-color: #450a0a; }
+        
+        /* 3. TERMINAL (Vert/Noir - Matrix) */
+        html[data-theme="terminal"] body { background-color: #0c0c0c; color: #22c55e; font-family: 'Courier New', Courier, monospace; }
+        html[data-theme="terminal"] aside { background-color: #050505; border-color: #14532d; }
+        html[data-theme="terminal"] header { background-color: rgba(12, 12, 12, 0.95); border-color: #14532d; }
+        html[data-theme="terminal"] .paper-sheet { background-color: #000000; border: 1px solid #22c55e; box-shadow: 0 0 10px rgba(34, 197, 94, 0.2); }
+        html[data-theme="terminal"] textarea, html[data-theme="terminal"] input { color: #4ade80; font-family: 'Courier New', Courier, monospace; }
+        html[data-theme="terminal"] ::placeholder { color: #14532d; }
+        html[data-theme="terminal"] button { color: #22c55e; }
 
-  /* Scene + charts layout */
-  #scene{width:100%;height:calc(var(--vh)*62);border:1px solid var(--line);border-radius:12px}
-  #distChart{width:100%;height:calc(var(--vh)*56);border:1px solid var(--line);border-radius:12px}
-  .row{display:flex;gap:12px;flex-wrap:wrap}
-  .col{flex:1 1 360px}
+        /* Animations */
+        .mic-active { animation: pulse-red 1.5s infinite; background-color: #fee2e2; border-color: #ef4444; color: #dc2626; }
+        @keyframes pulse-red { 0% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.7); } 70% { box-shadow: 0 0 0 10px rgba(239, 68, 68, 0); } 100% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0); } }
+        
+        .horizontal-scroll-container { overflow-x: auto; -webkit-overflow-scrolling: touch; touch-action: pan-x; scrollbar-width: none; -ms-overflow-style: none; display: flex; flex: 1; min-width: 0; }
+        .horizontal-scroll-container::-webkit-scrollbar { display: none; }
 
-  /* Dashboard tiles */
-  .grid{
-    display:grid;grid-template-columns:repeat(3,minmax(260px,1fr));gap:12px
-  }
-  @media (max-width: 980px){ .grid{grid-template-columns:repeat(2,minmax(44vw,1fr))} }
-  @media (max-width: 640px){ .grid{grid-template-columns:1fr} }
-  .tile{
-    background:rgba(8,20,38,0.92);border:1px solid var(--line);border-radius:12px;
-    padding:10px 12px;font-family:'Share Tech Mono',monospace;box-shadow:0 2px 10px rgba(0,0,0,0.25)
-  }
-  .tileTitle{font-size:12px;letter-spacing:1px;color:#9fe7ff;margin-bottom:2px}
-  .tileBig{font-size:26px;line-height:1.25;color:#e6f2ff}
-  .tileSub{font-size:12px;color:var(--ink2)}
-  .tilePlot{width:100%;height:120px}
-
-  /* HUD mini (always visible) */
-  #hud{
-    position:fixed;right:10px;bottom:10px;z-index:1200;padding:10px 12px;
-    border-radius:12px;border:1px solid var(--line);background:rgba(8,20,38,0.94);
-    font-family:'Share Tech Mono',monospace;max-width:min(480px,96vw)
-  }
-  #hud .title{font-size:12px;letter-spacing:2px;color:#9fe7ff}
-  #hud .timer{display:flex;align-items:baseline;gap:6px;margin-top:4px}
-  #hud #hudHours{font-size:34px;line-height:1;color:var(--accent)}
-  #hud .unit{font-size:16px;color:#c8f7ff}
-  #hud #hudMinutes{font-size:16px;color:#a6f1ff}
-  #hud .date{font-size:12px;color:#9ac6e8}
-  #hud .exact{font-size:14px;color:#cfe7ff;margin-top:4px}
-  #hud .bigDelta{font-size:18px;color:#7df9ff;margin-top:6px;letter-spacing:1px}
-  #hud .bigSpeed{font-size:14px;color:#b9ffdf;margin-top:4px}
-  #hud .live{font-size:12px;color:#b9dbff;margin-top:4px}
-
-  /* Buttons (context) */
-  .btn{padding:7px 10px;border:1px solid var(--line);border-radius:10px;background:var(--card);color:#cfe7ff;cursor:pointer}
-  .btn-row{display:flex;flex-wrap:wrap;gap:8px;margin:10px 0}
-
-  /* Controls cards */
-  .card{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:10px}
-  label, .help{font:12px/1.4 ui-monospace,Menlo,monospace;color:#cfe7ff}
-  select,input[type="number"],input[type="text"],input[type="datetime-local"],textarea{
-    width:100%;box-sizing:border-box;padding:6px 8px;border:1px solid var(--line);border-radius:8px;background:#081426;color:#e6f2ff
-  }
-  textarea{min-height:220px}
-
-  /* Error & toast */
-  #errBox{position:fixed;left:10px;bottom:10px;z-index:1400;background:#2b1d1d;color:#ffdada;
-    border:1px solid #5c2a2a;border-radius:10px;padding:8px 10px;max-width:90vw;font:12px/1.4 ui-monospace;display:none;white-space:pre-wrap}
-  #toast{position:fixed;top:12px;left:50%;transform:translateX(-50%);z-index:1400;padding:10px 14px;border-radius:10px;display:none;backdrop-filter:blur(4px)}
-  #toast.ok{background:#103a26;color:#d9ffe9;border:1px solid #1f6f4a}
-  #toast.err{background:#3a1a1a;color:#ffdada;border:1px solid #6a2a2a}
-</style>
+        @media print {
+            aside, header, .toolbar, #toast, button, #backup-zone { display: none !important; }
+            body, .editor-container { background: white !important; color: black !important; height: auto !important; overflow: visible !important; padding: 0 !important; }
+            textarea { resize: none; border: none; height: auto !important; }
+        }
+    </style>
 </head>
-<body>
-  <div class="topbar">
-    <div class="brand">3I/ATLAS — APPROCHE TERRE • OFFLINE (catalogue)</div>
-    <div class="tabs" id="tabs">
-      <button class="tab-btn active" data-tab="tab-3d">Vue 3D</button>
-      <button class="tab-btn" data-tab="tab-dist">Distance</button>
-      <button class="tab-btn" data-tab="tab-dash">Dashboard</button>
-      <button class="tab-btn" data-tab="tab-data">Données</button>
-      <button class="tab-btn" data-tab="tab-settings">Réglages</button>
-    </div>
-  </div>
+<body class="h-screen flex overflow-hidden bg-gray-100 dark:bg-gray-900 text-slate-800 dark:text-slate-200 transition-colors duration-300">
 
-  <!-- Panels -->
-  <div class="panel active" id="tab-3d">
-    <div class="btn-row">
-      <button id="fsBtn" class="btn">Plein écran</button>
-      <button id="focusBtn" class="btn">Focus Approche</button>
-      <button id="resetViewBtn" class="btn">Reset vue</button>
-      <button id="nowBtn" class="btn">Aller à NOW</button>
-    </div>
-    <div id="scene"></div>
-  </div>
-
-  <div class="panel" id="tab-dist">
-    <div class="row">
-      <div class="col">
-        <div class="card">
-          <div class="btn-row">
-            <button id="playBtn" class="btn">Lecture</button>
-            <select id="speedSel" class="btn">
-              <option value="0.5">Vitesse 0.5x</option>
-              <option value="1" selected>Vitesse 1x</option>
-              <option value="2">Vitesse 2x</option>
-              <option value="5">Vitesse 5x</option>
-            </select>
-            <select id="stepSel" class="btn">
-              <option value="0.0104166667">15 min</option>
-              <option value="0.0416666667" selected>1 h</option>
-              <option value="0.25">6 h</option>
-              <option value="0.5">12 h</option>
-              <option value="1">1 j</option>
-            </select>
-            <select id="windowSel" class="btn">
-              <option value="90">Fenêtre ±90 j</option>
-              <option value="180" selected>Fenêtre ±180 j</option>
-              <option value="360">Fenêtre ±360 j</option>
-            </select>
-          </div>
-          <div class="btn-row">
-            <label><input type="checkbox" id="kmCheck" checked> Axe droit: km (Mkm)</label>
-            <label><input type="checkbox" id="logY"> Échelle log (AU)</label>
-            <label><input type="checkbox" id="followNow" checked> Camera Follow NOW (3D)</label>
-            <label><input type="checkbox" id="safeMode"> Mode safe (cache graphe)</label>
-          </div>
-          <input id="timeRange" type="range" min="-180" max="180" step="0.5" value="0">
-          <div id="timeRead" class="help">Curseur: tp +0.0 j | -- AU (~ -- Mkm)</div>
-          <div class="btn-row">
-            <label style="flex:1">Surbrillance ±j autour du min
-              <input id="hlDays" type="number" value="7" step="1" min="1" max="60">
-            </label>
-            <button id="applyHL" class="btn">Appliquer</button>
-            <button id="zoomMinBtn" class="btn" title="Zoom sur l'approche minimale">Zoom min</button>
-          </div>
-        </div>
-      </div>
-      <div class="col">
-        <div id="distChart"></div>
-      </div>
-    </div>
-  </div>
-
-  <div class="panel" id="tab-dash">
-    <div class="grid">
-      <div class="tile">
-        <div class="tileTitle">Δ Terre NOW</div>
-        <div id="tileDist" class="tileBig">-- km</div>
-        <div id="tileDistAU" class="tileSub">-- AU</div>
-      </div>
-      <div class="tile">
-        <div class="tileTitle">Vitesse héliocentrique</div>
-        <div id="tileSpeed" class="tileBig">-- km/s</div>
-      </div>
-      <div class="tile">
-        <div class="tileTitle">Vitesse relative Terre</div>
-        <div id="tileVrel" class="tileBig">-- km/s</div>
-      </div>
-      <div class="tile">
-        <div class="tileTitle">Compteur Δ min (UTC)</div>
-        <div id="tileCountdown" class="tileBig">J-000 00:00</div>
-        <div id="tileEta" class="tileSub">ETA: --</div>
-      </div>
-      <div class="tile">
-        <div class="tileTitle">Proximité (0–100 %)</div>
-        <div id="tileGauge" class="tilePlot"></div>
-      </div>
-      <div class="tile">
-        <div class="tileTitle">UTC</div>
-        <div id="tileUTC" class="tileBig">--:--:--</div>
-        <div id="tileDate" class="tileSub">--</div>
-      </div>
-    </div>
-  </div>
-
-  <div class="panel" id="tab-data">
-    <div class="row">
-      <div class="col">
-        <div class="card">
-          <div class="tileTitle">Catalogue OFFLINE</div>
-          <div class="btn-row">
-            <select id="offlineSelect" title="Objets OFFLINE" style="flex:1"></select>
-            <button id="offlineLoad" class="btn">Charger objet</button>
-          </div>
-          <div class="btn-row">
-            <input id="offlineName" placeholder="Nom OFFLINE (ex: 3I/ATLAS)">
-            <button id="offlineSave" class="btn">Sauver orbite courante</button>
-            <button id="offlineList" class="btn">Liste OFFLINE</button>
-          </div>
-        </div>
-      </div>
-      <div class="col">
-        <div class="card">
-          <div class="tileTitle">Import manuel</div>
-          <div class="help">Collez JSON SBDB/MPC ou format simple (e=…, q=…, inc=…, Omega=…, omega=…, tpISO=…)</div>
-          <textarea id="manualText" placeholder='Exemples:
-1) JSON SBDB minimal :
-{"orbit":{"elements":{"e":"6.13","q_au":"1.3563","i_deg":"175.1131","om":"322.1574","w":"128.0127","tp_cal":"2025-10-29T11:35:31"}}}
-
-2) Format simple :
-e=6.138559
-q=1.356320
-inc=175.11310
-Omega=322.15740
-omega=128.01270
-tpISO=2025-10-29T11:35:31'></textarea>
-          <div class="btn-row">
-            <button id="manualLoad" class="btn">Charger</button>
-            <button id="importSample" class="btn">Exemple</button>
-            <button id="importFileBtn" class="btn">Depuis fichier (.json/.txt)</button>
-            <input id="importFile" type="file" accept=".json,.txt" style="display:none">
-          </div>
+    <!-- MENU LATÉRAL -->
+    <aside id="sidebar" class="w-80 bg-white dark:bg-slate-800 border-r border-gray-200 dark:border-gray-700 flex flex-col transform -translate-x-full md:translate-x-0 transition-transform duration-300 absolute md:relative z-50 h-full shadow-2xl md:shadow-none">
+        <div class="p-4 border-b border-gray-100 dark:border-gray-700 bg-gray-50 dark:bg-slate-900/50 backdrop-blur">
+            <div class="flex items-center justify-between mb-4">
+                <div class="flex items-center gap-3">
+                    <div class="bg-red-600 text-white p-2 rounded-lg shadow-md"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 2l9 4.9V17L12 22 3 17V6.9l9-4.9z"></path></svg></div>
+                    <h1 class="text-lg font-bold tracking-tight">SSIAP NOTE <span class="text-[10px] bg-gray-200 dark:bg-gray-700 px-1 rounded text-gray-500">v11.3</span></h1>
+                </div>
+                <button onclick="toggleSidebar()" class="md:hidden p-2 text-gray-400 hover:bg-gray-200 rounded-full"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg></button>
+            </div>
+            <button onclick="createNewNote()" class="w-full py-3 bg-slate-900 dark:bg-indigo-600 hover:bg-slate-800 text-white rounded-xl font-bold shadow-lg active:scale-95 transition-all flex items-center justify-center gap-2">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg> Nouvelle Note
+            </button>
+            <div class="mt-3 relative">
+                <svg class="absolute left-3 top-3 text-gray-400" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+                <input type="text" oninput="handleSearch(this.value)" placeholder="Rechercher..." class="w-full pl-9 pr-3 py-2 bg-white dark:bg-slate-700 border border-gray-200 dark:border-gray-600 rounded-lg text-sm focus:ring-2 focus:ring-indigo-500 outline-none transition-all">
+            </div>
         </div>
 
-        <div class="card" style="margin-top:12px">
-          <div class="tileTitle">Export séries distance</div>
-          <div class="btn-row">
-            <button id="exportCsv" class="btn">Export CSV</button>
-            <button id="exportJson" class="btn">Export JSON</button>
-          </div>
+        <div id="notes-list" class="flex-1 overflow-y-auto p-2 space-y-2 bg-gray-50/50 dark:bg-slate-900/50 no-scrollbar"></div>
+
+        <!-- ZONE DE SAUVEGARDE (BACKUP) -->
+        <div id="backup-zone" class="p-3 border-t border-gray-200 dark:border-gray-700 bg-slate-50 dark:bg-slate-900 flex flex-col gap-3">
+             <div class="flex justify-between items-center">
+                 <span class="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Sauvegarde</span>
+                 <span id="save-indicator" class="text-[10px] text-emerald-500 font-bold opacity-0 transition-opacity">Sync OK</span>
+             </div>
+             <div class="grid grid-cols-2 gap-2">
+                <button onclick="downloadBackup()" class="flex flex-col items-center justify-center p-2 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg hover:bg-blue-50 dark:hover:bg-slate-700 transition-colors group">
+                    <svg class="text-blue-500 mb-1" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
+                    <span class="text-xs font-bold text-slate-600 dark:text-slate-300">Sauver</span>
+                </button>
+                <button onclick="document.getElementById('backupInput').click()" class="flex flex-col items-center justify-center p-2 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg hover:bg-orange-50 dark:hover:bg-slate-700 transition-colors group">
+                    <svg class="text-orange-500 mb-1" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="17 8 12 3 7 8"></polyline><line x1="12" y1="3" x2="12" y2="15"></line></svg>
+                    <span class="text-xs font-bold text-slate-600 dark:text-slate-300">Restaurer</span>
+                </button>
+                <input type="file" id="backupInput" accept=".json" class="hidden" onchange="importBackup(this)">
+             </div>
+             
+             <!-- IA INSTALLATION -->
+             <button id="btn-install-ai" onclick="window.installAI()" class="w-full py-1.5 px-2 text-left rounded-lg text-xs text-slate-500 hover:bg-white dark:hover:bg-slate-700 flex items-center justify-between">
+                 <span id="ai-status-text">Gérer l'IA locale</span>
+                 <div id="ai-status-dot" class="w-2 h-2 rounded-full bg-gray-400"></div>
+             </button>
+             <div id="ai-progress-container" class="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-1 hidden relative overflow-hidden">
+                 <div id="ai-progress" class="bg-indigo-600 h-full rounded-full" style="width: 0%"></div>
+             </div>
         </div>
-      </div>
+    </aside>
+
+    <div id="overlay" onclick="toggleSidebar()" class="fixed inset-0 bg-black/50 backdrop-blur-sm z-40 hidden md:hidden transition-opacity"></div>
+
+    <!-- MAIN CONTENT -->
+    <main class="flex-1 flex flex-col h-full relative w-full max-w-full">
+        <header class="h-14 bg-white dark:bg-slate-900 border-b border-gray-200 dark:border-gray-700 flex items-center shrink-0 z-20 sticky top-0 shadow-sm overflow-x-auto no-scrollbar">
+            <button onclick="toggleSidebar()" class="md:hidden p-3 text-gray-500 hover:bg-gray-100 dark:hover:bg-slate-700 shrink-0"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="3" y1="12" x2="21" y2="12"></line><line x1="3" y1="6" x2="21" y2="6"></line><line x1="3" y1="18" x2="21" y2="18"></line></svg></button>
+            
+            <div class="horizontal-scroll-container flex items-center px-2">
+                <div class="flex items-center gap-1 pr-6 min-w-max"> 
+                    
+                    <!-- BOUTON THEME (PALETTE) -->
+                    <button onclick="openModal('theme-modal')" class="p-2 text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg shrink-0" title="Changer le thème">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2.69l5.66 5.66a8 8 0 1 1-11.31 0z"></path></svg>
+                    </button>
+
+                    <div class="h-6 w-px bg-gray-300 dark:bg-gray-700 mx-1"></div>
+
+                    <button onclick="openModal('template-modal')" class="flex items-center gap-1 px-3 py-1.5 text-sm font-medium bg-indigo-50 dark:bg-indigo-900/30 text-indigo-600 dark:text-indigo-400 rounded-lg border border-indigo-100 dark:border-indigo-800 hover:bg-indigo-100 shrink-0"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect><line x1="9" y1="9" x2="15" y2="9"></line><line x1="9" y1="13" x2="15" y2="13"></line><line x1="9" y1="17" x2="11" y2="17"></line></svg> Modèles</button>
+                    <button onclick="insertText('\n[ ] ')" class="p-2 text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-slate-800 rounded-lg shrink-0"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 11l3 3L22 4"></path><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"></path></svg></button>
+                    
+                    <div class="h-6 w-px bg-gray-300 dark:bg-gray-700 mx-1"></div>
+
+                    <button id="btn-mic" onclick="toggleDictation()" class="p-2 text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-slate-800 rounded-lg shrink-0"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"></path><path d="M19 10v2a7 7 0 0 1-14 0v-2"></path><line x1="12" y1="19" x2="12" y2="23"></line><line x1="8" y1="23" x2="16" y2="23"></line></svg></button>
+                    <button onclick="triggerCamera()" class="p-2 text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-slate-800 rounded-lg shrink-0"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"></path><circle cx="12" cy="13" r="4"></circle></svg></button>
+                    <input type="file" id="cameraInput" accept="image/*" capture="environment" class="hidden" onchange="handleImageUpload(this)">
+                    <button onclick="document.getElementById('galleryInput').click()" class="p-2 text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-slate-800 rounded-lg shrink-0"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect><circle cx="8.5" cy="8.5" r="1.5"></circle><polyline points="21 15 16 10 5 21"></polyline></svg></button>
+                    <input type="file" id="galleryInput" accept="image/*" class="hidden" onchange="handleImageUpload(this)">
+                    
+                    <div class="h-6 w-px bg-gray-300 dark:bg-gray-700 mx-1"></div>
+
+                    <button onclick="window.runAISummary()" class="p-2 text-violet-600 dark:text-violet-400 hover:bg-violet-50 dark:hover:bg-violet-900/30 rounded-lg font-bold flex items-center gap-1 shrink-0"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2a10 10 0 1 0 10 10H12V2z"></path><path d="M12 2a10 10 0 0 1 10 10"></path><path d="M12 22V12"></path></svg> IA</button>
+                    <button onclick="openExportModal()" class="p-2 text-gray-600 hover:bg-gray-100 dark:text-gray-300 rounded-lg shrink-0"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg></button>
+                    <button onclick="deleteCurrentNote()" class="p-2 text-red-400 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg shrink-0"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg></button>
+                </div>
+            </div>
+        </header>
+
+        <div class="flex-1 overflow-y-auto p-0 md:p-8 bg-white dark:bg-slate-950 md:bg-gray-100 md:dark:bg-slate-950" id="main-scroll">
+            <div class="editor-container w-full max-w-3xl mx-auto bg-white dark:bg-slate-900 md:shadow-xl md:rounded-2xl min-h-full p-4 md:p-12 flex flex-col gap-4 animate-in fade-in duration-300 overflow-hidden">
+                
+                <textarea id="note-title" rows="1" oninput="autoResize(this); triggerAutoSave();" placeholder="Titre de la note..." class="w-full text-3xl md:text-4xl font-extrabold text-slate-900 dark:text-white border-none outline-none bg-transparent placeholder-gray-300 dark:placeholder-gray-600 resize-none overflow-hidden leading-tight break-words whitespace-pre-wrap" style="min-height: 48px;"></textarea>
+                
+                <div id="note-date" class="text-xs font-bold text-gray-400 uppercase tracking-widest -mt-2"></div>
+
+                <div id="summary-box" class="hidden p-4 bg-indigo-50 dark:bg-indigo-900/20 rounded-xl border border-indigo-100 dark:border-indigo-800 relative w-full overflow-hidden">
+                    <h3 class="text-xs font-bold text-indigo-600 dark:text-indigo-400 uppercase mb-2 flex items-center gap-2"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M12 2a10 10 0 1 0 10 10H12V2z"></path></svg> Résumé IA</h3>
+                    <p id="summary-content" class="text-sm text-gray-700 dark:text-gray-300 leading-relaxed break-words"></p>
+                    <button onclick="document.getElementById('summary-box').classList.add('hidden')" class="absolute top-2 right-2 text-indigo-300 p-1"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg></button>
+                </div>
+
+                <textarea id="note-content" oninput="triggerAutoSave(); autoResize(this)" placeholder="Commencez à écrire..." class="w-full resize-none text-lg text-slate-700 dark:text-slate-300 border-none outline-none bg-transparent placeholder-gray-300 dark:placeholder-gray-600 break-words whitespace-pre-wrap"></textarea>
+                
+                <div id="image-grid-container" class="hidden mt-8 pt-4 border-t border-gray-100 dark:border-gray-800 w-full">
+                    <div class="flex items-center justify-between mb-4">
+                        <h3 class="text-xs font-bold text-gray-400 uppercase tracking-wider">Pièces jointes</h3>
+                    </div>
+                    <div id="image-grid" class="flex flex-wrap gap-4 items-start relative w-full"></div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- MODAL THEMES -->
+    <div id="theme-modal" class="fixed inset-0 z-50 hidden items-center justify-center bg-black/50 backdrop-blur-sm p-4 fade-enter">
+        <div class="bg-white dark:bg-slate-900 rounded-2xl shadow-2xl max-w-xs w-full border border-gray-200 dark:border-gray-800 overflow-hidden">
+            <div class="p-4 border-b border-gray-100 dark:border-gray-800 flex justify-between items-center">
+                <h3 class="font-bold text-lg dark:text-white">Choisir un thème</h3>
+                <button onclick="closeModal('theme-modal')" class="text-gray-400"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg></button>
+            </div>
+            <div class="p-2 grid grid-cols-1 gap-2">
+                <button onclick="setTheme('light')" class="w-full text-left p-3 hover:bg-gray-100 dark:hover:bg-slate-800 rounded-xl flex items-center gap-3"><div class="w-6 h-6 rounded-full border border-gray-300 bg-white"></div> <span class="text-slate-800 dark:text-white font-medium">Clair (Standard)</span></button>
+                <button onclick="setTheme('dark')" class="w-full text-left p-3 hover:bg-gray-100 dark:hover:bg-slate-800 rounded-xl flex items-center gap-3"><div class="w-6 h-6 rounded-full bg-slate-900 border border-slate-600"></div> <span class="text-slate-800 dark:text-white font-medium">Sombre</span></button>
+                <button onclick="setTheme('forest')" class="w-full text-left p-3 hover:bg-green-50 dark:hover:bg-slate-800 rounded-xl flex items-center gap-3"><div class="w-6 h-6 rounded-full bg-emerald-100 border border-emerald-500"></div> <span class="text-emerald-700 dark:text-emerald-400 font-medium">Forêt (Vert)</span></button>
+                <button onclick="setTheme('night')" class="w-full text-left p-3 hover:bg-red-50 dark:hover:bg-slate-800 rounded-xl flex items-center gap-3"><div class="w-6 h-6 rounded-full bg-black border border-red-600"></div> <span class="text-red-600 dark:text-red-400 font-medium">Nocturne (Rouge)</span></button>
+                <button onclick="setTheme('terminal')" class="w-full text-left p-3 hover:bg-gray-100 dark:hover:bg-slate-800 rounded-xl flex items-center gap-3"><div class="w-6 h-6 rounded-full bg-black border border-green-500 font-mono flex items-center justify-center text-[10px] text-green-500">&gt;_</div> <span class="text-green-600 dark:text-green-400 font-mono">Terminal</span></button>
+            </div>
+        </div>
     </div>
-  </div>
 
-  <div class="panel" id="tab-settings">
-    <div class="row">
-      <div class="col">
-        <div class="card">
-          <div class="tileTitle">Paramètres Lune (modèle elliptique)</div>
-          <div class="row">
-            <label class="col">a (km)<input id="moonA" type="number" step="1"></label>
-            <label class="col">e<input id="moonE" type="number" step="0.0001"></label>
-          </div>
-          <div class="row">
-            <label class="col">i (deg)<input id="moonI" type="number" step="0.001"></label>
-            <label class="col">Ω (deg)<input id="moonOmega" type="number" step="0.001"></label>
-          </div>
-          <div class="row">
-            <label class="col">ω (deg)<input id="moonSmallOmega" type="number" step="0.001"></label>
-            <label class="col">Période T (jours)<input id="moonT" type="number" step="0.000001"></label>
-          </div>
-          <div class="row">
-            <label class="col">Epoch (UTC)<input id="moonEpoch" type="datetime-local"></label>
-            <label class="col">M0 (deg)<input id="moonM0" type="number" step="0.001"></label>
-          </div>
-          <div class="btn-row">
-            <button id="moonApply" class="btn">Appliquer</button>
-            <button id="moonReset" class="btn">Réinitialiser</button>
-          </div>
+    <!-- MODAL TEMPLATES -->
+    <div id="template-modal" class="fixed inset-0 z-50 hidden items-center justify-center bg-black/50 backdrop-blur-sm p-4 fade-enter">
+        <div class="bg-white dark:bg-slate-900 rounded-2xl shadow-2xl max-w-sm w-full border border-gray-200 dark:border-gray-800 overflow-hidden">
+            <div class="p-4 border-b border-gray-100 dark:border-gray-800 flex justify-between items-center">
+                <h3 class="font-bold text-lg dark:text-white">Modèles Rapides</h3>
+                <button onclick="closeModal('template-modal')" class="text-gray-400"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg></button>
+            </div>
+            <div class="p-2 max-h-[60vh] overflow-y-auto grid grid-cols-1 gap-1">
+                <button onclick="applyTemplate('cours')" class="text-left p-3 hover:bg-gray-50 dark:hover:bg-slate-800 rounded-xl flex items-center gap-3"><span class="text-2xl">📚</span> <div><div class="font-bold text-sm dark:text-white">Cours Théorique</div><div class="text-xs text-gray-500">Prise de notes standard</div></div></button>
+                <button onclick="applyTemplate('extincteur')" class="text-left p-3 hover:bg-gray-50 dark:hover:bg-slate-800 rounded-xl flex items-center gap-3"><span class="text-2xl">🧯</span> <div><div class="font-bold text-sm dark:text-white">Vérif. Extincteur</div><div class="text-xs text-gray-500">Checklist de contrôle</div></div></button>
+                <button onclick="applyTemplate('ronde')" class="text-left p-3 hover:bg-gray-50 dark:hover:bg-slate-800 rounded-xl flex items-center gap-3"><span class="text-2xl">🔦</span> <div><div class="font-bold text-sm dark:text-white">Ronde de Sécurité</div><div class="text-xs text-gray-500">Points de vigilance</div></div></button>
+                <button onclick="applyTemplate('calculs')" class="text-left p-3 hover:bg-gray-50 dark:hover:bg-slate-800 rounded-xl flex items-center gap-3"><span class="text-2xl">🧮</span> <div><div class="font-bold text-sm dark:text-white">Calculs Dégagements</div><div class="text-xs text-gray-500">Formulaire UP</div></div></button>
+            </div>
         </div>
-      </div>
-      <div class="col">
-        <div class="card">
-          <div class="tileTitle">Aide</div>
-          <div class="help">
-            • Onglet <b>Vue 3D</b> : orbites, Terre, Lune, hyperbole et liens Δ.<br>
-            • Onglet <b>Distance</b> : séries AU/Mkm, curseur temporel, zoom min.<br>
-            • Onglet <b>Dashboard</b> : jauge Proximité, compte à rebours, vitesses, UTC.<br>
-            • Onglet <b>Données</b> : OFFLINE, import/export.<br>
-            • Onglet <b>Réglages</b> : paramètres Lune.<br>
-          </div>
-        </div>
-      </div>
     </div>
-  </div>
+    <div id="export-modal" class="fixed inset-0 z-50 hidden items-center justify-center bg-black/50 backdrop-blur-sm p-4 fade-enter"><div class="bg-white dark:bg-slate-900 rounded-2xl shadow-2xl max-w-sm w-full border border-gray-200 dark:border-gray-800 p-4"><h3 class="font-bold mb-4 text-center dark:text-white">Exporter</h3><button onclick="downloadSingleNote()" class="w-full py-3 bg-indigo-600 text-white rounded-xl font-bold mb-2">Fichier HTML (Autonome)</button><button onclick="closeModal('export-modal')" class="w-full py-2 text-gray-500">Annuler</button></div></div>
+    <div id="toast" class="fixed top-20 right-4 z-50 px-4 py-2 rounded-lg shadow-xl bg-slate-800 text-white text-sm font-bold transition-all duration-300 opacity-0 pointer-events-none transform -translate-y-2"></div>
 
-  <!-- HUD compact -->
-  <div id="hud">
-    <div class="title">3 I / ATLAS — APPROCHE TERRE</div>
-    <div class="timer"><span id="hudHours">--</span><span class="unit">h</span><span id="hudMinutes">:--:--</span></div>
-    <div class="date" id="hudTarget">Approche (UTC): --</div>
-    <div class="date" id="utcClock">UTC: --</div>
-    <div class="exact" id="hudExact">J-000 00:00:00</div>
-    <div class="bigDelta" id="bigDelta">Δ Terre NOW: --</div>
-    <div class="bigSpeed" id="bigSpeed">v héliocentrique NOW: --</div>
-    <div class="bigSpeed" id="bigVrel">v relative Terre NOW: --</div>
-    <div class="live" id="moonNow">Lune NOW: ΔTL -- km</div>
-    <div class="live" id="hudDist">NOW: t=-- | Δ: -- | v: -- | v_rel: --</div>
-    <div class="live" id="closestInfo">Approche min: --</div>
-    <div class="live" id="sourceBadge">Source: OFFLINE (catalogue)</div>
-  </div>
+    <!-- MODULE IA (ESM) -->
+    <script type="module">
+        import { pipeline, env } from 'https://cdn.jsdelivr.net/npm/@xenova/transformers@2.16.0';
+        env.allowLocalModels = false;
+        env.useBrowserCache = true;
+        let generator = null;
+        let downloadAttempt = 0;
 
-  <div id="errBox"></div>
-  <div id="toast"></div>
+        // Fonction d'installation manuelle
+        window.installAI = async function() {
+            const btn = document.getElementById('btn-install-ai');
+            const dot = document.getElementById('ai-status-dot');
+            const txt = document.getElementById('ai-status-text');
+            const barContainer = document.getElementById('ai-progress-container');
+            const bar = document.getElementById('ai-progress');
+            const progressText = document.getElementById('ai-progress-text');
 
-<script>
-/* ==========================================================
-   ATLAS-OFFLINE v5.2 — Tabs + Dashboard (OFFLINE only)
-   ========================================================== */
-(() => {
-"use strict";
+            if(generator) { showToast("IA déjà prête !"); return; }
 
-/* ---------- Build / viewport ---------- */
-const BUILD = 'ATLAS-OFFLINE v5.2 tabs+dashboard (offline)';
-console.log('[BUILD]', BUILD);
-document.documentElement.style.setProperty('--vh', (window.innerHeight*0.01)+'px');
-window.addEventListener('resize', ()=>document.documentElement.style.setProperty('--vh',(window.innerHeight*0.01)+'px'));
+            btn.disabled = true;
+            txt.innerText = "Initialisation...";
+            barContainer.classList.remove('hidden');
+            progressText.classList.remove('hidden');
+            dot.classList.replace('bg-gray-400', 'bg-yellow-400');
+            dot.classList.add('animate-pulse');
 
-/* ---------- Error + toast ---------- */
-function showError(msg,src,line,col){
-  const box=document.getElementById("errBox");
-  if(!box) return;
-  box.style.display="block";
-  box.textContent="Error: "+msg+(src?("\\nSource: "+src):"")+(line?(" line:"+line):"")+(col?(" col:"+col):"");
-}
-window.onerror=function(m,s,l,c){ showError(m,s,l,c); };
-window.addEventListener('unhandledrejection', e=>{
-  const r=(e && e.reason && (e.reason.message||e.reason)) || e;
-  showError('Promise rejection: '+r);
-});
-function toast(msg, ok=true){
-  const t=document.getElementById('toast'); if(!t) return;
-  t.className = ok ? 'ok' : 'err';
-  t.textContent = msg;
-  t.style.display = 'block';
-  clearTimeout(t._to);
-  t._to = setTimeout(()=>{ t.style.display='none'; }, 4200);
-}
+            try {
+                generator = await pipeline('summarization', 'Xenova/distilbart-cnn-6-6', {
+                    progress_callback: (data) => {
+                        if (data.status === 'progress') {
+                            const pct = Math.round(data.progress || 0);
+                            bar.style.width = pct + '%';
+                            txt.innerText = `Téléchargement...`;
+                            progressText.innerText = `${data.file} : ${pct}%`;
+                        }
+                        if (data.status === 'done') {
+                             progressText.innerText = "Chargement...";
+                        }
+                    }
+                });
+                
+                // Succès & Persistance
+                localStorage.setItem('ssiap_ai_installed', 'true');
+                updateAIStatusUI();
+                showToast("IA installée avec succès !");
 
-/* ---------- Constants ---------- */
-const AU_KM=149597870.7, DAY_S=86400, D2R=Math.PI/180, R2D=180/Math.PI, TWO_PI=Math.PI*2;
-const k=0.01720209895, mu=k*k;
+            } catch (err) {
+                console.error(err);
+                txt.innerText = "Echec (Réessayer)";
+                progressText.innerText = "Vérifiez connexion";
+                dot.classList.replace('bg-yellow-400', 'bg-red-500');
+                btn.disabled = false;
+                btn.onclick = () => { 
+                    downloadAttempt++;
+                    window.installAI(); // Retry
+                };
+            }
+        };
+        
+        window.updateAIStatusUI = function() {
+            const dot = document.getElementById('ai-status-dot');
+            const txt = document.getElementById('ai-status-text');
+            const icon = document.getElementById('ai-download-icon');
+            const barContainer = document.getElementById('ai-progress-container');
+            const pText = document.getElementById('ai-progress-text');
 
-/* ---------- STATE (declare early to avoid TDZ) ---------- */
-let sceneReady=false, chartReady=false, dashReady=false;
-let lastBest=null, lastData=null, distSeries=null;
-let scrub={eIdx:-1,cIdx:-1,lIdx:-1}, nowG={eIdx:-1,cIdx:-1,lIdx:-1}, moonCur={mIdx:-1,lIdx:-1,rIdx:-1}, moonNow={mIdx:-1,lIdx:-1,rIdx:-1};
+            if(localStorage.getItem('ssiap_ai_installed') === 'true') {
+                txt.innerText = "IA Prête (Offline)";
+                if(dot) dot.className = "w-2 h-2 rounded-full bg-green-500";
+                if(icon) icon.style.display = 'none';
+                if(barContainer) barContainer.classList.add('hidden');
+                if(pText) pText.classList.add('hidden');
+            }
+        }
 
-/* ---------- Helpers ---------- */
-function two(n){return (n<10?'0':'')+n;}
-function clamp(v,a,b){return v<a?a:(v>b?b:v);}
-function groupInt(n){ const s=Math.round(n).toString(); let o='',c=0; for(let i=s.length-1;i>=0;i--){o=s[i]+o;c++; if(c===3&&i>0){o=' '+o;c=0;}} return o; }
-function kmWithUnit(km){ if(km>=1e9) return (km/1e9).toFixed(2)+' Gkm'; if(km>=1e6) return (km/1e6).toFixed(2)+' Mkm'; return groupInt(km)+' km'; }
+        window.runAISummary = async function() {
+            const c = document.getElementById('note-content').value;
+            if(!c || c.length<20) { showToast("Texte trop court pour l'IA", "error"); return; }
+            
+            if(!generator) {
+                if (localStorage.getItem('ssiap_ai_installed') === 'true') {
+                    try {
+                        showToast("Chargement moteur IA...");
+                        generator = await pipeline('summarization', 'Xenova/distilbart-cnn-6-6'); 
+                    } catch(e) {
+                        localStorage.removeItem('ssiap_ai_installed');
+                        showToast("Erreur cache IA. Réinstallez.");
+                        return;
+                    }
+                } else {
+                    await window.installAI();
+                    if(!generator) return;
+                }
+            }
 
-/* ---------- Tabs ---------- */
-(function wireTabs(){
-  const tabs = document.getElementById('tabs');
-  if(!tabs) return;
-  tabs.addEventListener('click', (e)=>{
-    const b = e.target.closest('.tab-btn'); if(!b) return;
-    const t = b.dataset.tab;
-    document.querySelectorAll('.tab-btn').forEach(x=>x.classList.remove('active'));
-    b.classList.add('active');
-    document.querySelectorAll('.panel').forEach(p=>p.classList.remove('active'));
-    const target = document.getElementById(t); if(target) target.classList.add('active');
-  });
-})();
+            try {
+                showToast("Analyse en cours...");
+                const out = await generator(c, { max_new_tokens: 100, min_length: 10 });
+                document.getElementById('summary-content').innerText = out[0].summary_text;
+                document.getElementById('summary-box').classList.remove('hidden');
+                window.saveCurrentNote(); 
+                showToast("Résumé généré !");
+            } catch(e) { console.error(e); showToast("Erreur IA"); }
+        };
 
-/* ---------- OFFLINE lib ---------- */
-const OFFLINE_LIB_DEFAULT = {
-  "3I/ATLAS": { e:6.137350157289094, q:1.356065570996796, inc:175.112857793716, Omega:322.152284964919, omega:128.011608251772, tpISO:"2025-10-29T11:36:17" }
-};
+        if(localStorage.getItem('ssiap_ai_installed') === 'true') {
+            window.updateAIStatusUI();
+        }
+    </script>
 
-function getOfflineLib(){
-  let base = JSON.parse(JSON.stringify(OFFLINE_LIB_DEFAULT));
-  try{
-    const js = localStorage.getItem('atlas_offline_lib');
-    if(js){ Object.assign(base, JSON.parse(js)); }
-  }catch(_){}
-  return base;
-}
-function setOfflineLibEntry(name, obj){
-  let lib = {};
-  try{ lib = JSON.parse(localStorage.getItem('atlas_offline_lib')||'{}'); }catch(_){}
-  lib[name] = { e:obj.e, q:obj.q, inc:obj.inc, Omega:obj.Omega, omega:obj.omega, tpISO:obj.tpISO };
-  localStorage.setItem('atlas_offline_lib', JSON.stringify(lib));
-}
-function offlineListText(){
-  const lib = getOfflineLib(), out=[];
-  for(const k in lib){
-    const o=lib[k];
-    out.push(k+'  | e='+o.e+'  q='+o.q+'  inc='+o.inc+'  Ω='+o.Omega+'  ω='+o.omega+'  tp='+o.tpISO);
-  }
-  return out.length? out.join('\n') : '(OFFLINE vide)';
-}
-function populateOfflineSelect(){
-  const sel=document.getElementById('offlineSelect'), lib=getOfflineLib();
-  if(!sel) return;
-  sel.innerHTML='';
-  for(const k in lib){ const opt=document.createElement('option'); opt.value=k; opt.textContent=k; sel.appendChild(opt); }
-}
+    <script>
+        // --- DB (IndexedDB) ---
+        const DB_NAME='CalepinDB', DB_VER=1; 
+        const dbPromise=new Promise((res,rej)=>{const r=indexedDB.open(DB_NAME,DB_VER);r.onupgradeneeded=e=>{if(!e.target.result.objectStoreNames.contains('notes'))e.target.result.createObjectStore('notes',{keyPath:'id'})};r.onsuccess=e=>res(e.target.result);r.onerror=e=>rej(e)});
+        async function dbPut(n){const db=await dbPromise;const tx=db.transaction('notes','readwrite');tx.objectStore('notes').put(n);return new Promise(r=>tx.oncomplete=r);}
+        async function dbGetAll(){const db=await dbPromise;const tx=db.transaction('notes','readonly');return new Promise(r=>tx.objectStore('notes').getAll().onsuccess=e=>r(e.target.result));}
+        async function dbDelete(id){const db=await dbPromise;const tx=db.transaction('notes','readwrite');tx.objectStore('notes').delete(id);return new Promise(r=>tx.oncomplete=r);}
+        
+        // NOUVELLE FONCTION D'IMPORTATION DE MASSE
+        async function dbImportAll(notes) {
+            const db = await dbPromise;
+            return new Promise((resolve, reject) => {
+                const tx = db.transaction('notes', 'readwrite');
+                const store = tx.objectStore('notes');
+                
+                tx.oncomplete = () => resolve();
+                tx.onerror = (e) => reject(e);
+                
+                notes.forEach(note => {
+                    if(note.id) store.put(note);
+                });
+            });
+        }
+        async function dbClear(){const db=await dbPromise;return new Promise((res,rej)=>{const tx=db.transaction('notes','readwrite');tx.objectStore('notes').clear();tx.oncomplete=res;tx.onerror=rej});}
 
-/* ---------- Math & utils ---------- */
-function Rz(a){const c=Math.cos(a),s=Math.sin(a);return [[c,-s,0],[s,c,0],[0,0,1]];}
-function Rx(a){const c=Math.cos(a),s=Math.sin(a);return [[1,0,0],[0,c,-s],[0,s,c]];}
-function Mx(A,v){return [A[0][0]*v[0]+A[0][1]*v[1]+A[0][2]*v[2],A[1][0]*v[0]+A[1][1]*v[1]+A[1][2]*v[2],A[2][0]*v[0]+A[2][1]*v[1]+A[2][2]*v[2]];}
-function M33(A,B){const C=[[0,0,0],[0,0,0],[0,0,0]];for(let i=0;i<3;i++){for(let j=0;j<3;j++){for(let k=0;k<3;k++){C[i][j]+=A[i][k]*B[k][j];}}}return C;}
+        // VARS
+        window.notes = []; window.currentNoteId = null; window.currentImages = []; window.currentTags = [];
+        let saveTimeout = null;
 
-/* ---------- Earth (approx) ---------- */
-function DAYSS(date){return (date.getTime()/1000 - Date.UTC(2000,0,1,12,0,0)/1000)/DAY_S;}
-function earthHelio(date){ const d=DAYSS(date); const L=(280.460+0.9856474*d)*D2R, g=(357.528+0.9856003*d)*D2R; const lambda=L+(1.915*Math.sin(g)+0.020*Math.sin(2*g))*D2R; const r=1.00014-0.01671*Math.cos(g)-0.00014*Math.cos(2*g); return {x:r*Math.cos(lambda),y:r*Math.sin(lambda),z:0,r:r}; }
-function earthState(date){ const dt=300/86400,p=earthHelio(date),f=earthHelio(new Date(date.getTime()+dt*DAY_S*1000)),b=earthHelio(new Date(date.getTime()-dt*DAY_S*1000)); const vx=(f.x-b.x)/(2*dt),vy=(f.y-b.y)/(2*dt),vz=0; return {r:p,v:{x:vx,y:vy,z:vz}}; }
+        // INIT
+        async function init() {
+            try {
+                window.notes = await dbGetAll();
+                window.notes.sort((a,b) => b.updatedAt - a.updatedAt);
+                if(!window.notes.length) createNewNote(); else loadNote(window.notes[0].id);
+                renderNotesList();
+                
+                // Theme Loading
+                const savedTheme = localStorage.getItem('theme') || 'light';
+                setTheme(savedTheme);
+                
+                // Backup automatique à la fermeture/changement d'app
+                document.addEventListener('visibilitychange', () => {
+                    if (document.visibilityState === 'hidden') saveCurrentNote();
+                });
+            } catch(e) { console.error(e); }
+        }
 
-/* ---------- Moon (elliptic) ---------- */
-let moonCtx=null;
-function moonDefault(){ return {a_km:384400.0,e:0.0549,i_deg:5.145,Omega_deg:125.08,omega_deg:318.15,T_days:27.321661,epochISO:"2000-01-01T12:00:00",M0_deg:0.0}; }
-function buildMoonCtx(par){ const a_AU=par.a_km/AU_KM, n=TWO_PI/par.T_days; const Q=M33(Rz(par.Omega_deg*D2R), M33(Rx(par.i_deg*D2R), Rz(par.omega_deg*D2R))); const epoch=new Date(par.epochISO+'Z'); return {a:a_AU,e:par.e,n:n,Q:Q,epoch:epoch,M0:par.M0_deg*D2R}; }
-function keplerE(M,e){ M=Math.atan2(Math.sin(M),Math.cos(M)); let E=M+(e*Math.sin(M))/(1 - Math.sin(M+M)+Math.sin(M)); for(let i=0;i<20;i++){ const f=E-e*Math.sin(E)-M, df=1-e*Math.cos(E), d=f/df; E-=d; if(Math.abs(d)<1e-12) break; } return E; }
-function moonState(date){ if(!moonCtx){ moonCtx=buildMoonCtx(moonDefault()); }
-  const d=(date-moonCtx.epoch)/1000/DAY_S, M=moonCtx.M0+moonCtx.n*d, E=keplerE(M,moonCtx.e);
-  const cE=Math.cos(E), sE=Math.sin(E), fac=Math.sqrt(1-moonCtx.e*moonCtx.e);
-  const r_pf=[moonCtx.a*(cE-moonCtx.e), moonCtx.a*(fac*sE), 0];
-  const dEdt=moonCtx.n/(1-moonCtx.e*cE), v_pf=[-moonCtx.a*sE*dEdt, moonCtx.a*fac*cE*dEdt, 0];
-  const r_geo=Mx(moonCtx.Q,r_pf), v_geo=Mx(moonCtx.Q,v_pf);
-  const E0=earthState(date);
-  return { r:{x:E0.r.x+r_geo[0], y:E0.r.y+r_geo[1], z:E0.r.z+r_geo[2]}, v:{x:E0.v.x+v_geo[0], y:E0.v.y+v_geo[1], z:E0.v.z+v_geo[2]}, E:E0, dkm:Math.sqrt(r_geo[0]*r_geo[0]+r_geo[1]*r_geo[1]+r_geo[2]*r_geo[2])*AU_KM };
-}
-function moonEllipseForEarth(Epos){ const N=220,xs=[],ys=[],zs=[],fac=Math.sqrt(1-moonCtx.e*moonCtx.e); for(let i=0;i<=N;i++){ const EE=TWO_PI*i/N,cE=Math.cos(EE),sE=Math.sin(EE); const r_pf=[moonCtx.a*(cE-moonCtx.e), moonCtx.a*(fac*sE), 0], v=Mx(moonCtx.Q,r_pf); xs.push(Epos.x+v[0]); ys.push(Epos.y+v[1]); zs.push(Epos.z+v[2]); } return {x:xs,y:ys,z:zs}; }
+        // THEMES
+        function setTheme(theme) {
+            const html = document.documentElement;
+            html.classList.remove('dark'); // Reset tailwind dark mode
+            html.removeAttribute('data-theme');
 
-/* ---------- Hyperbolic orbit ---------- */
-function H_from_time(dt,e,a){ const tau=Math.sqrt(Math.pow(-a,3)/mu), sgn=dt>=0?1:-1; let H=sgn*Math.log(2*Math.abs(dt)+1e-6); for(let it=0;it<60;it++){ const f=tau*(e*Math.sinh(H)-H)-dt, df=tau*(e*Math.cosh(H)-1), step=f/df; H-=step; if(Math.abs(step)<1e-10) break; } return H; }
-function orbitContext(p){ const a=-p.q/(p.e-1), Q=M33(Rz(p.Omega*D2R), M33(Rx(p.inc*D2R), Rz(p.omega*D2R))), tp=new Date(p.tpISO+'Z'); return {e:p.e,q:p.q,inc:p.inc,Omega:p.Omega,omega:p.omega,a:a,p:p.q*(1+p.e),Q:Q,tp:tp}; }
-function cometState(ctx,d){ const H=H_from_time(d,ctx.e,ctx.a), tanu2=Math.sqrt((ctx.e+1)/(ctx.e-1))*Math.tanh(H/2), nu=2*Math.atan(tanu2);
-  const r=ctx.p/(1+ctx.e*Math.cos(nu)), c=Math.cos(nu), s=Math.sin(nu);
-  const r_pf=[r*c, r*s, 0], fac=Math.sqrt(mu/ctx.p), v_pf=[-fac*s, fac*(ctx.e+c), 0];
-  const rE=Mx(ctx.Q,r_pf), vE=Mx(ctx.Q,v_pf);
-  return {r:{x:rE[0],y:rE[1],z:rE[2],r:r}, v:{x:vE[0],y:vE[1],z:vE[2]}, nu:nu};
-}
+            if (theme === 'dark') {
+                html.classList.add('dark');
+            } else if (theme !== 'light') {
+                // For forest, night, terminal
+                html.setAttribute('data-theme', theme);
+                if (theme === 'night' || theme === 'terminal') html.classList.add('dark'); // These are dark-ish
+            }
+            
+            localStorage.setItem('theme', theme);
+            closeModal('theme-modal');
+        }
 
-/* ---------- Computations ---------- */
-function computeEphem(p){
-  const ctx=orbitContext(p), nuMax=Math.acos(-1/ctx.e), N = (innerWidth>=1600?2200:(innerWidth>=1200?1600:(innerWidth>=900?1200:900))), curve={x:[],y:[],z:[]};
-  for(let j=0;j<N;j++){ const nu=-0.96*nuMax+(1.92*nuMax)*j/(N-1); const r=ctx.p/(1+ctx.e*Math.cos(nu)); const rE=Mx(ctx.Q,[r*Math.cos(nu), r*Math.sin(nu), 0]); curve.x.push(rE[0]); curve.y.push(rE[1]); curve.z.push(rE[2]); }
-  const days=[-120,-90,-60,-30,-10,-5,-1,0,1,5,10,30,60,90,120], markers=[];
-  for(let k2=0;k2<days.length;k2++){ const d=days[k2], CS=cometState(ctx,d); const vAUd=Math.sqrt(CS.v.x*CS.v.x+CS.v.y*CS.v.y+CS.v.z*CS.v.z), vKms=vAUd*(AU_KM/DAY_S); const date=new Date(ctx.tp.getTime()+d*DAY_S*1000); markers.push({date:date.toISOString().slice(0,10),dt:d,r:CS.r.r,nu:CS.nu*R2D,v:vKms,x:CS.r.x,y:CS.r.y,z:CS.r.z}); }
-  const rp=Mx(ctx.Q,[ctx.q,0,0]);
-  return {curve:curve,markers:markers,perihelion:{x:rp[0],y:rp[1],z:rp[2]},ctx:ctx};
-}
-function computeEarthApproach(p,rangeDays){
-  const ctx=orbitContext(p); let best={dist:1e9,date:null,e:null,c:null,d:null,ctx:ctx};
-  for(let d=-rangeDays; d<=rangeDays; d+=0.5){
-    const date=new Date(ctx.tp.getTime()+d*DAY_S*1000);
-    const E=earthHelio(date), C=cometState(ctx,d).r;
-    const dx=C.x-E.x,dy=C.y-E.y,dz=C.z-E.z, dist=Math.sqrt(dx*dx+dy*dy+dz*dz);
-    if(dist<best.dist) best={dist:dist,date:date,e:E,c:{x:C.x,y:C.y,z:C.z},d:d,ctx:ctx};
-  }
-  return best;
-}
-function distAUAt(ctx,d){
-  const date=new Date(ctx.tp.getTime()+d*DAY_S*1000), E=earthHelio(date), C=cometState(ctx,d).r;
-  const dx=C.x-E.x,dy=C.y-E.y,dz=C.z-E.z, au=Math.sqrt(dx*dx+dy*dy+dz*dz);
-  return {au:au,date:date,E:E,C:C};
-}
-function refineClosest(best){
-  const ctx=best.ctx; let a=best.d-5,b=best.d+5;
-  const f=(x)=>distAUAt(ctx,x).au;
-  for(let i=0;i<80;i++){ const m1=a+(b-a)/3, m2=b-(b-a)/3; if(f(m1)<f(m2)) b=m2; else a=m2; }
-  const d=(a+b)/2,S=distAUAt(ctx,d), ES=earthState(S.date), CS=cometState(ctx,d);
-  const dvx=CS.v.x-ES.v.x,dvy=CS.v.y-ES.v.y,dvz=CS.v.z;
-  const vRelKms=Math.sqrt(dvx*dvx+dvy*dvy+dvz*dvz)*(AU_KM/DAY_S);
-  const vObjKms=Math.sqrt(CS.v.x*CS.v.x+CS.v.y*CS.v.y+CS.v.z*CS.v.z)*(AU_KM/DAY_S);
-  return {ctx:ctx,dist:S.au,date:S.date,e:S.E,c:{x:S.C.x,y:S.C.y,z:S.C.z},d:d,vRelKms:vRelKms,vObjKms:vObjKms};
-}
-function computeDistanceSeries(ctx,range){
-  const x=[],y=[],ykm=[]; let bestAU=1e9,bestIdx=-1;
-  for(let d=-range; d<=range; d+=1){
-    const date=new Date(ctx.tp.getTime()+d*DAY_S*1000), E=earthHelio(date), C=cometState(ctx,d).r;
-    const dx=C.x-E.x,dy=C.y-E.y,dz=C.z-E.z, au=Math.sqrt(dx*dx+dy*dy+dz*dz);
-    x.push(date.toISOString()); y.push(au); ykm.push(au*AU_KM/1e6);
-    if(au<bestAU){bestAU=au;bestIdx=x.length-1;}
-  }
-  let ymin=1e9,ymax=-1e9,ymin2=1e9,ymax2=-1e9;
-  for(let i=0;i<y.length;i++){ ymin=Math.min(ymin,y[i]); ymax=Math.max(ymax,y[i]); ymin2=Math.min(ymin2,ykm[i]); ymax2=Math.max(ymax2,ykm[i]); }
-  return {x:x,y:y,ykm:ykm,ymin:ymin,ymax:ymax,ymin2:ymin2,ymax2:ymax2,minIndex:bestIdx,minDate:new Date(x[bestIdx]),minAU:bestAU};
-}
 
-/* --- Proximité Terre 0..1 --- */
-function computeProximityPct(date, ctxOpt, minAUOpt, farAUOpt){
-  try{
-    const ctx = ctxOpt || (lastBest && lastBest.ctx);
-    if(!ctx) return 0;
-    const dDays = (date - ctx.tp) / 1000 / DAY_S;
-    const now = distAUAt(ctx, dDays);
-    const nowAU = now.au;
-    const minAU = (typeof minAUOpt === 'number') ? minAUOpt :
-                  (lastBest && typeof lastBest.dist === 'number' ? lastBest.dist : nowAU);
-    let farAU;
-    if (typeof farAUOpt === 'number') {
-      farAU = farAUOpt;
-    } else if (distSeries && Array.isArray(distSeries.y) && distSeries.y.length) {
-      farAU = distSeries.y.reduce((m,v)=> v>m?v:m, 0);
-    } else {
-      farAU = Math.max(minAU*3, nowAU*1.1, minAU + 1e-6);
-    }
-    if (farAU <= minAU) farAU = minAU + 1e-6;
-    const pct = (farAU - nowAU) / (farAU - minAU);
-    return clamp(pct, 0, 1);
-  }catch(_){ return 0; }
-}
+        // LOGIC
+        function triggerAutoSave() {
+            const ind = document.getElementById('save-indicator');
+            ind.style.opacity = '0';
+            clearTimeout(saveTimeout);
+            saveTimeout = setTimeout(() => { saveCurrentNote(); ind.style.opacity = '1'; }, 800);
+        }
 
-/* ---------- 3D scene ---------- */
-function circ(R){const x=[],y=[],z=[];for(let t=0;t<720;t++){const th=t*Math.PI/360;x.push(R*Math.cos(th));y.push(R*Math.sin(th));z.push(0);}return {x:x,y:y,z:z};}
-function drawPlot(data){
-  const traces=[], ear=circ(1.0), ven=circ(0.723), mar=circ(1.524);
-  traces.push({type:"scatter3d",mode:"lines",x:ven.x,y:ven.y,z:ven.z,name:"Venus",line:{width:2,color:"rgba(125,211,252,0.6)"}});
-  traces.push({type:"scatter3d",mode:"lines",x:ear.x,y:ear.y,z:ear.z,name:"Terre",line:{width:7,color:"rgba(255,255,255,0.95)"}});
-  traces.push({type:"scatter3d",mode:"lines",x:mar.x,y:mar.y,z:mar.z,name:"Mars",line:{width:2,color:"rgba(110,231,183,0.6)"}});
-  traces.push({type:"scatter3d",mode:"lines",name:"3I/ATLAS - hyperbole",x:data.curve.x,y:data.curve.y,z:data.curve.z,line:{width:6,color:"rgba(0,255,208,1)"}});
+        async function saveCurrentNote() {
+            const t = document.getElementById('note-title').value;
+            const c = document.getElementById('note-content').value;
+            if(!t && !c && !window.currentImages.length) return;
+            const note = { id: window.currentNoteId, title: t || "Sans titre", content: c, summary: document.getElementById('summary-content').innerText, images: window.currentImages, tags: window.currentTags, updatedAt: Date.now() };
+            const idx = window.notes.findIndex(n => n.id === window.currentNoteId);
+            if(idx >= 0) window.notes[idx] = note; else window.notes.unshift(note);
+            await dbPut(note); renderNotesList();
+        }
 
-  const mx=[],my=[],mz=[]; for(let i=0;i<data.markers.length;i++){ mx.push(data.markers[i].x); my.push(data.markers[i].y); mz.push(data.markers[i].z); }
-  traces.push({type:"scatter3d",mode:"markers",x:mx,y:my,z:mz,name:"Repères",marker:{size:3,color:"rgba(125,249,255,0.9)"}});
+        function createNewNote() {
+            window.currentNoteId = Date.now().toString();
+            window.currentImages = []; window.currentTags = [];
+            document.getElementById('note-title').value = "";
+            document.getElementById('note-content').value = "";
+            document.getElementById('note-date').innerText = new Date().toLocaleString();
+            document.getElementById('summary-box').classList.add('hidden');
+            renderImages(); if(window.innerWidth < 768) toggleSidebar(false); autoResize(document.getElementById('note-title'));
+        }
 
-  traces.push({type:"scatter3d",mode:"markers+text",x:[0],y:[0],z:[0],text:["Soleil"],textposition:"bottom center",name:"Soleil",marker:{size:4,color:"#ffd166"}});
-  traces.push({type:"scatter3d",mode:"markers+text",x:[data.perihelion.x],y:[data.perihelion.y],z:[data.perihelion.z],text:["Perihelie"],textposition:"top center",name:"Perihelie",marker:{size:5,color:"#f59e0b"}});
+        function loadNote(id) {
+            const n = window.notes.find(x => x.id === id); if(!n) return;
+            window.currentNoteId = n.id; window.currentImages = n.images || []; window.currentTags = n.tags || [];
+            document.getElementById('note-title').value = n.title; document.getElementById('note-content').value = n.content; document.getElementById('note-date').innerText = new Date(n.updatedAt).toLocaleString();
+            if(n.summary) { document.getElementById('summary-content').innerText = n.summary; document.getElementById('summary-box').classList.remove('hidden'); } else { document.getElementById('summary-box').classList.add('hidden'); }
+            renderImages(); renderNotesList(); autoResize(document.getElementById('note-title')); autoResize(document.getElementById('note-content')); if(window.innerWidth < 768) toggleSidebar(false);
+        }
 
-  const idxE=traces.length; traces.push({type:"scatter3d",mode:"markers+text",x:[],y:[],z:[],text:["Cur Terre"],textposition:"top center",name:"Cur Terre",marker:{size:6,color:"#ffffff"}});
-  const idxC=traces.length; traces.push({type:"scatter3d",mode:"markers+text",x:[],y:[],z:[],text:["Cur ATLAS"],textposition:"top center",name:"Cur ATLAS",marker:{size:6,color:"#7df9ff"}});
-  const idxL=traces.length; traces.push({type:"scatter3d",mode:"lines",x:[],y:[],z:[],name:"Cur Δ",line:{width:2,dash:"dot",color:"rgba(255,255,255,0.7)"}});
+        function renderNotesList() {
+            const l = document.getElementById('notes-list'); l.innerHTML = "";
+            window.notes.forEach(n => {
+                const active = n.id === window.currentNoteId;
+                l.innerHTML += `<div onclick="loadNote('${n.id}')" class="p-3 rounded-xl cursor-pointer border transition-all ${active ? 'bg-white dark:bg-slate-700 border-indigo-500 shadow-sm' : 'border-transparent hover:bg-gray-100 dark:hover:bg-slate-800'}"><div class="font-bold text-sm truncate text-slate-800 dark:text-white mb-1">${n.title || "Sans titre"}</div><div class="flex items-center gap-1"><div class="text-xs text-gray-400 truncate">${n.content || "Vide..."}</div></div></div>`;
+            });
+        }
 
-  const idxMcur=traces.length; traces.push({type:"scatter3d",mode:"markers+text",x:[],y:[],z:[],text:["Lune @"],textposition:"top center",name:"Lune (CUR)",marker:{size:5,color:"#c5bdfd"}});
-  const idxMLcur=traces.length; traces.push({type:"scatter3d",mode:"lines",x:[],y:[],z:[],name:"Δ TL (CUR)",line:{width:2,dash:"dot",color:"rgba(197,189,253,0.8)"}});
-  const idxMRcur=traces.length; traces.push({type:"scatter3d",mode:"lines",x:[],y:[],z:[],name:"Orb Lune (CUR)",line:{width:1,color:"rgba(197,189,253,0.35)"}});
+        async function deleteCurrentNote() {
+            if(!confirm("Supprimer ?")) return;
+            await dbDelete(window.currentNoteId);
+            window.notes = window.notes.filter(n => n.id !== window.currentNoteId);
+            if(window.notes.length) loadNote(window.notes[0].id); else createNewNote();
+            showToast("Note supprimée");
+        }
 
-  scrub={eIdx:idxE,cIdx:idxC,lIdx:idxL}; moonCur={mIdx:idxMcur,lIdx:idxMLcur,rIdx:idxMRcur};
+        // MODALS & TOOLS
+        function openModal(id) { document.getElementById(id).classList.remove('hidden'); document.getElementById(id).classList.add('flex'); }
+        function closeModal(id) { document.getElementById(id).classList.add('hidden'); document.getElementById(id).classList.remove('flex'); }
+        function applyTemplate(type) {
+            const t = document.getElementById('note-title'); const c = document.getElementById('note-content'); const d = new Date().toLocaleString();
+            if(type === 'cours') { t.value = `COURS - [Sujet]`; c.value = `📅 Date : ${d}\n👨‍🏫 Formateur :\n\n📌 Thème :\n\n🔹 Points Clés :\n\n\n⚠️ Important :`; }
+            if(type === 'extincteur') { t.value = `Vérif Extincteur - ${d}`; c.value = `[ ] Emplacement correct\n[ ] Signalisation visible\n[ ] Goupille présente\n[ ] Scellé intact\n[ ] Pas de choc visible\n\nObservation : RAS`; }
+            if(type === 'ronde') { t.value = `Ronde Sécurité - ${d}`; c.value = `📍 Départ : \n📍 Fin : \n\n[ ] Issues dégagées\n[ ] Éclairage sécu OK\n[ ] Pas de point chaud\n\nAnomalies : \n`; }
+            if(type === 'calculs') { t.value = `Calcul UP`; c.value = `Effectif : \nType Ets : \n\nCalcul : Effectif / 100 = \n\nRésultat UP : `; }
+            closeModal('template-modal'); autoResize(t); autoResize(c); saveCurrentNote();
+        }
+        function autoResize(el) { el.style.height = 'auto'; el.style.height = el.scrollHeight + 'px'; }
+        function insertText(txt) { const el = document.getElementById('note-content'); const s = el.selectionStart; el.value = el.value.substring(0, s) + txt + el.value.substring(el.selectionEnd); el.selectionStart = el.selectionEnd = s + txt.length; el.focus(); autoResize(el); saveCurrentNote(); }
+        function triggerCamera() { if(location.protocol === 'file:') alert("Caméra bloquée en local."); document.getElementById('cameraInput').click(); }
+        function handleImageUpload(inp) { const f = inp.files[0]; if(!f) return; const r = new FileReader(); r.onload = e => { const i = new Image(); i.src = e.target.result; i.onload = () => { const c = document.createElement('canvas'); const ratio = 1000 / Math.max(i.width, 1000); c.width = i.width * ratio; c.height = i.height * ratio; c.getContext('2d').drawImage(i, 0, 0, c.width, c.height); window.currentImages.push({ src: c.toDataURL('image/jpeg', 0.7), width: 48 }); renderImages(); saveCurrentNote(); }; }; r.readAsDataURL(f); inp.value = ""; }
+        function renderImages() { const g = document.getElementById('image-grid'); const c = document.getElementById('image-grid-container'); if(!window.currentImages.length) { c.classList.add('hidden'); return; } c.classList.remove('hidden'); g.innerHTML = ""; window.currentImages.forEach((img, i) => { g.innerHTML += `<div class="relative w-[48%] min-w-[140px] flex-grow rounded-lg overflow-hidden border border-gray-200 shadow-sm group"><img src="${img.src}" class="w-full h-auto"><button onclick="removeImage(${i})" class="absolute top-1 right-1 bg-white/80 text-red-600 p-1 rounded-full opacity-0 group-hover:opacity-100 transition-opacity"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg></button></div>`; }); }
+        function removeImage(i) { window.currentImages.splice(i, 1); renderImages(); saveCurrentNote(); }
+        let rec; let isRec = false;
+        function toggleDictation() { if(location.protocol === 'file:') { alert("Micro bloqué en local."); return; } if(!('webkitSpeechRecognition' in window)) { showToast("Micro non supporté", "error"); return; } if(isRec) stopRec(); else startRec(); }
+        function startRec() { const SR = window.webkitSpeechRecognition; rec = new SR(); rec.lang = 'fr-FR'; rec.continuous = true; rec.interimResults = false; rec.onstart = () => { isRec = true; document.getElementById('btn-mic').classList.add('mic-active'); showToast("Parlez..."); }; rec.onresult = e => insertText(e.results[e.results.length-1][0].transcript + " "); rec.start(); }
+        function stopRec() { if(rec) rec.stop(); isRec = false; document.getElementById('btn-mic').classList.remove('mic-active'); }
+        function toggleSidebar(force) { const s = document.getElementById('sidebar'); const o = document.getElementById('overlay'); const show = force !== undefined ? force : s.classList.contains('-translate-x-full'); if(show) { s.classList.remove('-translate-x-full'); o.classList.remove('hidden'); } else { s.classList.add('-translate-x-full'); o.classList.add('hidden'); } }
+        function showToast(m, t='success') { const el = document.getElementById('toast'); el.innerText = m; el.className = `fixed top-4 right-4 z-50 px-4 py-2 rounded-lg shadow-xl text-white text-sm font-bold transition-all duration-300 transform translate-y-0 opacity-100 ${t==='error'?'bg-red-500':'bg-emerald-600'}`; setTimeout(() => { el.classList.remove('translate-y-0', 'opacity-100'); t.classList.add('-translate-y-2', 'opacity-0'); }, 2000); }
+        async function downloadBackup() { const all = await dbGetAll(); const a = document.createElement('a'); a.href = URL.createObjectURL(new Blob([JSON.stringify(all)],{type:'application/json'})); a.download=`backup_ssiap_${new Date().toISOString().split('T')[0]}.json`; a.click(); }
+        
+        // RESTAURATION
+        function importBackup(input) {
+            const file = input.files[0];
+            if (!file) return;
+            
+            const reader = new FileReader();
+            reader.onload = async (e) => {
+                try {
+                    const data = JSON.parse(e.target.result);
+                    if (Array.isArray(data)) {
+                         if (confirm(`Restaurer ${data.length} fiches ? (Écrase les données actuelles)`)) {
+                            await dbClear();
+                            await dbImportAll(data); // Use Batch Import
+                            await init();
+                            showToast("Restauration réussie !", "success");
+                         }
+                    } else {
+                         throw new Error("Format invalide");
+                    }
+                } catch (err) {
+                    console.error(err);
+                    alert("Fichier de sauvegarde invalide ou corrompu.");
+                }
+            };
+            reader.readAsText(file);
+            input.value = ""; 
+        }
 
-  const idxEN=traces.length; traces.push({type:"scatter3d",mode:"markers+text",x:[],y:[],z:[],text:["Terre NOW"],textposition:"top center",name:"Terre (NOW)",marker:{size:8,color:"#ffffff"}});
-  const idxCN=traces.length; traces.push({type:"scatter3d",mode:"markers+text",x:[],y:[],z:[],text:["ATLAS NOW"],textposition:"top center",name:"ATLAS (NOW)",marker:{size:8,color:"#00ffd0"}});
-  const idxLN=traces.length; traces.push({type:"scatter3d",mode:"lines",x:[],y:[],z:[],name:"Δ NOW",line:{width:2,color:"rgba(255,255,255,0.55)"}});
+        function handleSearch(v) { const l = document.getElementById('notes-list'); Array.from(l.children).forEach(el => { el.style.display = el.innerText.toLowerCase().includes(v.toLowerCase()) ? 'block' : 'none'; }); }
 
-  const idxMN=traces.length; traces.push({type:"scatter3d",mode:"markers+text",x:[],y:[],z:[],text:["Lune NOW"],textposition:"top center",name:"Lune (NOW)",marker:{size:6,color:"#c5bdfd"}});
-  const idxMLN=traces.length; traces.push({type:"scatter3d",mode:"lines",x:[],y:[],z:[],name:"Δ TL (NOW)",line:{width:2,color:"rgba(197,189,253,0.9)"}});
-  const idxMRN=traces.length; traces.push({type:"scatter3d",mode:"lines",x:[],y:[],z:[],name:"Orb Lune (NOW)",line:{width:1.5,color:"rgba(197,189,253,0.5)"}});
-
-  nowG={eIdx:idxEN,cIdx:idxCN,lIdx:idxLN}; moonNow={mIdx:idxMN,lIdx:idxMLN,rIdx:idxMRN};
-
-  const layout={paper_bgcolor:"rgba(0,0,0,0)",plot_bgcolor:"rgba(0,0,0,0)",
-    scene:{xaxis:{title:"x (AU)",gridcolor:"#1b2e4e",zerolinecolor:"#1b2e4e",color:"#cfe7ff"},
-           yaxis:{title:"y (AU)",gridcolor:"#1b2e4e",zerolinecolor:"#1b2e4e",color:"#cfe7ff"},
-           zaxis:{title:"z (AU)",gridcolor:"#1b2e4e",zerolinecolor:"#1b2e4e",color:"#cfe7ff"},
-           aspectmode:"manual",aspectratio:{x:1.0,y:1.0,z:0.35},
-           camera:{projection:{type:"perspective"},eye:{x:1.9,y:1.7,z:0.72}}},
-    margin:{l:0,r:0,t:0,b:0},showlegend:false};
-  const config={displaylogo:false,responsive:true,scrollZoom:true,doubleClick:"reset",
-                toImageButtonOptions:{format:"png",scale:(window.devicePixelRatio>1?2:1)}};
-  Plotly.newPlot("scene",traces,layout,config).then(()=>{ sceneReady=true; startRealtime(); jumpToNow(); });
-}
-
-/* ---------- Scrubber / NOW ---------- */
-let winDays=180, baseStepDays=1/24, animSpeed=1, animTimer=null, animPlaying=false, followNow=true, safeMode=false;
-function scrubToDays(d){
-  if(!sceneReady||!lastBest||!lastBest.ctx) return;
-  const date=new Date(lastBest.ctx.tp.getTime()+d*DAY_S*1000);
-  const ES=earthState(date), CS=cometState(lastBest.ctx,d);
-  Plotly.restyle("scene",{x:[[ES.r.x]],y:[[ES.r.y]],z:[[0]]},[scrub.eIdx]);
-  Plotly.restyle("scene",{x:[[CS.r.x]],y:[[CS.r.y]],z:[[CS.r.z]]},[scrub.cIdx]);
-  Plotly.restyle("scene",{x:[[ES.r.x,CS.r.x]],y:[[ES.r.y,CS.r.y]],z:[[0,CS.r.z]]},[scrub.lIdx]);
-
-  const MS=moonState(date), ring=moonEllipseForEarth(ES.r);
-  Plotly.restyle("scene",{x:[[MS.r.x]],y:[[MS.r.y]],z:[[MS.r.z]]},[moonCur.mIdx]);
-  Plotly.restyle("scene",{x:[[ES.r.x,MS.r.x]],y:[[ES.r.y,MS.r.y]],z:[[0,MS.r.z]]},[moonCur.lIdx]);
-  Plotly.restyle("scene",{x:[[ring.x]],y:[[ring.y]],z:[[ring.z]]},[moonCur.rIdx]);
-
-  const cx=(ES.r.x+CS.r.x)/2,cy=(ES.r.y+CS.r.y)/2,cz=(0+CS.r.z)/2;
-  const span=Math.max(Math.abs(ES.r.x-cx),Math.abs(CS.r.x-cx),Math.abs(ES.r.y-cy),Math.abs(CS.r.y-cy),Math.abs(CS.r.z-cz));
-  const R=Math.max(1.2*span,0.6);
-  Plotly.relayout("scene",{"scene.xaxis.range":[cx-R,cx+R],"scene.yaxis.range":[cy-R,cy+R],"scene.zaxis.range":[cz-R*0.35,cz+R*0.35]});
-
-  const dx=CS.r.x-ES.r.x,dy=CS.r.y-ES.r.y,dz=CS.r.z-ES.r.z, au=Math.sqrt(dx*dx+dy*dy+dz*dz), km=au*AU_KM;
-  const vObjAUd=Math.sqrt(CS.v.x*CS.v.x+CS.v.y*CS.v.y+CS.v.z*CS.v.z), vObjKms=vObjAUd*(AU_KM/DAY_S);
-  const dvx=CS.v.x-ES.v.x,dvy=CS.v.y-ES.v.y,dvz=CS.v.z, vRelAUd=Math.sqrt(dvx*dvx+dvy*dvy+dvz*dvz), vRelKms=vRelAUd*(AU_KM/DAY_S);
-  document.getElementById("timeRead").textContent="Curseur: "+date.toISOString().slice(0,19).replace("T"," ")+" | dt "+(d>=0?"+":"")+d.toFixed(2)+" j | "+au.toFixed(4)+" AU (~ "+(km/1e6).toFixed(2)+" Mkm) | v "+vObjKms.toFixed(1)+" km/s | v_rel "+vRelKms.toFixed(1)+" km/s";
-  updateScrubberDistance(date,au);
-}
-
-/* ---------- Realtime tick ---------- */
-function startRealtime(){
-  function tick(){
-    if(!lastBest||!lastBest.ctx) return;
-    const now=new Date(), d=(now-lastBest.ctx.tp)/1000/DAY_S, ES=earthState(now), CS=cometState(lastBest.ctx,d);
-    // NOW markers
-    Plotly.restyle("scene",{x:[[ES.r.x]],y:[[ES.r.y]],z:[[0]]},[nowG.eIdx]);
-    Plotly.restyle("scene",{x:[[CS.r.x]],y:[[CS.r.y]],z:[[CS.r.z]]},[nowG.cIdx]);
-    Plotly.restyle("scene",{x:[[ES.r.x,CS.r.x]],y:[[ES.r.y,CS.r.y]],z:[[0,CS.r.z]]},[nowG.lIdx]);
-    // Moon NOW
-    const MN=moonState(now), ring=moonEllipseForEarth(ES.r);
-    Plotly.restyle("scene",{x:[[MN.r.x]],y:[[MN.r.y]],z:[[MN.r.z]]},[moonNow.mIdx]);
-    Plotly.restyle("scene",{x:[[ES.r.x,MN.r.x]],y:[[ES.r.y,MN.r.y]],z:[[0,MN.r.z]]},[moonNow.lIdx]);
-    Plotly.restyle("scene",{x:[[ring.x]],y:[[ring.y]],z:[[ring.z]]},[moonNow.rIdx]);
-
-    if(followNow){
-      const cx=(ES.r.x+CS.r.x)/2, cy=(ES.r.y+CS.r.y)/2, cz=(0+CS.r.z)/2;
-      const span=Math.max(Math.abs(ES.r.x-cx),Math.abs(CS.r.x-cx),Math.abs(ES.r.y-cy),Math.abs(CS.r.y-cy),Math.abs(CS.r.z-cz));
-      const R=Math.max(1.2*span,0.6);
-      Plotly.relayout("scene",{"scene.xaxis.range":[cx-R,cx+R],"scene.yaxis.range":[cy-R,cy+R],"scene.zaxis.range":[cz-R*0.35,cz+R*0.35]});
-    }
-    const dx=CS.r.x-ES.r.x,dy=CS.r.y-ES.r.y,dz=CS.r.z-ES.r.z, au=Math.sqrt(dx*dx+dy*dy+dz*dz), km=au*AU_KM;
-    const vObjAUd=Math.sqrt(CS.v.x*CS.v.x+CS.v.y*CS.v.y+CS.v.z*CS.v.z), vObjKms=vObjAUd*(AU_KM/DAY_S);
-    const dvx=CS.v.x-ES.v.x,dvy=CS.v.y-ES.v.y,dvz=CS.v.z, vRelAUd=Math.sqrt(dvx*dvx+dvy*dvy+dvz*dvz), vRelKms=vRelAUd*(AU_KM/DAY_S);
-
-    document.getElementById("hudDist").textContent="NOW: t="+now.toISOString().slice(0,19).replace("T"," ")+" | Δ Terre: "+kmWithUnit(km)+" | v ~ "+vObjKms.toFixed(1)+" km/s | v_rel ~ "+vRelKms.toFixed(1)+" km/s";
-    document.getElementById("bigDelta").textContent="Δ Terre NOW: "+kmWithUnit(km);
-    document.getElementById("bigSpeed").textContent="v héliocentrique NOW: "+vObjKms.toFixed(2)+" km/s";
-    document.getElementById("bigVrel").textContent="v relative Terre NOW: "+vRelKms.toFixed(2)+" km/s";
-
-    document.getElementById("tileDist").textContent = kmWithUnit(km);
-    document.getElementById("tileDistAU").textContent = au.toFixed(6)+" AU";
-    document.getElementById("tileSpeed").textContent = vObjKms.toFixed(2)+" km/s";
-    document.getElementById("tileVrel").textContent = vRelKms.toFixed(2)+" km/s";
-
-    const pct = computeProximityPct(now) * 100;
-    if(dashReady){ Plotly.restyle('tileGauge', {value:[[pct]]}, [0]); }
-
-    updateUTCtiles(now);
-    updateCountdownTiles(now);
-    updateDistanceNow();
-  }
-  tick();
-  setInterval(tick, 1000);
-}
-
-/* ---------- Distance chart ---------- */
-let highlightDays = 7, shapesHL = [];
-function buildHighlightShapes(best){
-  const d0 = new Date(best.date.getTime() - highlightDays*DAY_S*1000).toISOString();
-  const d1 = new Date(best.date.getTime() + highlightDays*DAY_S*1000).toISOString();
-  return [{
-    type:"rect", xref:"x", yref:"paper", x0:d0, x1:d1, y0:0, y1:1, fillcolor:"rgba(0,255,208,0.08)", line:{width:0}
-  },{
-    type:"line", xref:"x", yref:"y", x0:best.date.toISOString(), x1:best.date.toISOString(), y0:distSeries.ymin, y1:distSeries.ymax,
-    line:{color:"rgba(125,249,255,0.9)", width:2, dash:"dot"}
-  }];
-}
-function drawDistanceChart(best){
-  distSeries=computeDistanceSeries(best.ctx, winDays);
-  const now=new Date(), E0=earthHelio(now), C0=cometState(best.ctx,(now-best.ctx.tp)/1000/DAY_S).r;
-  const dx=C0.x-E0.x,dy=C0.y-E0.y,dz=C0.z-E0.z, nowAU=Math.sqrt(dx*dx+dy*dy+dz*dz);
-
-  const hoverCommon = '<b>%{x|%Y-%m-%d %H:%M UTC}</b><br>Δ Terre: %{y:.6f} AU<extra></extra>';
-
-  const traces=[
-    {type:"scatter",mode:"lines",name:"Distance AU",x:distSeries.x,y:distSeries.y,line:{width:3},hovertemplate:hoverCommon},
-    {type:"scatter",mode:"lines",name:"Approche min",x:[best.date.toISOString(),best.date.toISOString()],y:[distSeries.ymin,distSeries.ymax],line:{dash:"dot",width:2}},
-    {type:"scatter",mode:"markers",name:"NOW",x:[now.toISOString()],y:[nowAU],marker:{size:10},hovertemplate:hoverCommon},
-    {type:"scatter",mode:"lines",name:"Distance Mkm",x:distSeries.x,y:distSeries.ykm,yaxis:"y2",line:{width:3},visible:true,
-      hovertemplate:'<b>%{x|%Y-%m-%d %H:%M UTC}</b><br>Δ Terre: %{y:.2f} Mkm<extra></extra>'},
-    {type:"scatter",mode:"markers",name:"NOW (Mkm)",x:[now.toISOString()],y:[nowAU*AU_KM/1e6],yaxis:"y2",marker:{size:10},visible:true,
-      hovertemplate:'<b>%{x|%Y-%m-%d %H:%M UTC}</b><br>Δ Terre: %{y:.2f} Mkm<extra></extra>'},
-    {type:"scatter",mode:"markers",name:"Curseur",x:[best.date.toISOString()],y:[best.dist],marker:{size:9},hovertemplate:hoverCommon},
-    {type:"scatter",mode:"markers",name:"Curseur (Mkm)",x:[best.date.toISOString()],y:[best.dist*AU_KM/1e6],yaxis:"y2",marker:{size:9},visible:true,
-      hovertemplate:'<b>%{x|%Y-%m-%d %H:%M UTC}</b><br>Δ Terre: %{y:.2f} Mkm<extra></extra>'}
-  ];
-  shapesHL = buildHighlightShapes(best);
-  const layout={margin:{l:60,r:60,t:8,b:40},paper_bgcolor:"rgba(0,0,0,0)",plot_bgcolor:"rgba(0,0,0,0)",
-    xaxis:{title:"Date (UTC)",gridcolor:"#1b2e4e",zerolinecolor:"#1b2e4e",color:"#cfe7ff",type:"date",
-           rangeslider:{visible:true,thickness:0.08,bgcolor:"rgba(12,28,50,0.9)"}},
-    yaxis:{title:"Distance Terre (AU)",gridcolor:"#1b2e4e",zerolinecolor:"#1b2e4e",color:"#cfe7ff",rangemode:"tozero"},
-    yaxis2:{title:"Distance Terre (Mkm)",overlaying:"y",side:"right",gridcolor:"#1b2e4e",zerolinecolor:"#1b2e4e",color:"#cfe7ff",rangemode:"tozero",showgrid:false,showticklabels:true},
-    shapes: shapesHL,
-    legend:{orientation:"h",x:0.02,y:1.06,font:{color:"#cfe7ff"}}
-  };
-  Plotly.newPlot("distChart",traces,layout,{displaylogo:false,responsive:true}).then(()=>{ chartReady=true; applyKmAxis(); applyLogAxis(); });
-}
-function refreshHighlight(best){ if(!chartReady) return; shapesHL = buildHighlightShapes(best); Plotly.relayout("distChart",{shapes: shapesHL}); }
-function updateScrubberDistance(date,au){ if(!chartReady) return; Plotly.restyle("distChart",{x:[[date.toISOString()]],y:[[au]]},[5]); Plotly.restyle("distChart",{x:[[date.toISOString()]],y:[[au*AU_KM/1e6]]},[6]); }
-function updateDistanceNow(){ if(!chartReady||!lastBest||!lastBest.ctx) return; const now=new Date(), E=earthHelio(now), C=cometState(lastBest.ctx,(now-lastBest.ctx.tp)/1000/DAY_S).r; const dx=C.x-E.x,dy=C.y-E.y,dz=C.z-E.z, au=Math.sqrt(dx*dx+dy*dy+dz*dz); Plotly.restyle("distChart",{x:[[now.toISOString()]],y:[[au]]},[2]); Plotly.restyle("distChart",{x:[[now.toISOString()]],y:[[au*AU_KM/1e6]]},[4]); }
-function applyKmAxis(){ if(!chartReady) return; const km=document.getElementById("kmCheck").checked;
-  Plotly.restyle("distChart",{visible:km?[false]:[true]},[0]);
-  Plotly.restyle("distChart",{visible:km?[false]:[true]},[2]);
-  Plotly.restyle("distChart",{visible:km?[true]:[false]},[3]);
-  Plotly.restyle("distChart",{visible:km?[true]:[false]},[4]);
-  Plotly.restyle("distChart",{visible:km?[false]:[true]},[5]);
-  Plotly.restyle("distChart",{visible:km?[true]:[false]},[6]);
-  Plotly.relayout("distChart",{"yaxis2.showticklabels":km,"yaxis2.showgrid":km});
-}
-function applyLogAxis(){ if(!chartReady) return; const log=document.getElementById('logY').checked; Plotly.relayout("distChart", {"yaxis.type": log?"log":"linear"}); }
-
-/* ---------- HUD / Dashboard helpers ---------- */
-function startUTCClock(){
-  const el=document.getElementById("utcClock");
-  function up(){ const n=new Date(); el.textContent="UTC: "+n.toISOString().slice(0,19).replace("T"," "); }
-  up(); setInterval(up,1000);
-}
-function updateUTCtiles(now){
-  const dd = now.toISOString().slice(0,10);
-  const tt = now.toISOString().slice(11,19);
-  document.getElementById('tileUTC').textContent = tt;
-  document.getElementById('tileDate').textContent = dd;
-}
-function startHudCountdown(){
-  const elH=document.getElementById("hudHours"), elM=document.getElementById("hudMinutes"), elT=document.getElementById("hudTarget"), elX=document.getElementById("hudExact");
-  function fmt(d){return d.toISOString().slice(0,16).replace("T"," "); }
-  function tick(){
-    if(!lastBest||!lastBest.date) return;
-    const bd=lastBest.date; elT.textContent="Approche (UTC): "+fmt(bd);
-    const now=new Date(), s=(bd-now)/1000, diff=Math.abs(s);
-    const totalH=Math.floor(diff/3600), days=Math.floor(diff/86400), hours=Math.floor((diff%86400)/3600), minutes=Math.floor((diff%3600)/60), seconds=Math.floor(diff%60);
-    elH.textContent=(s>=0?totalH:-totalH);
-    elM.textContent=":"+two(minutes)+":"+two(seconds);
-    elX.textContent="J"+(s>=0?"-":"+")+days+" "+two(hours)+":"+two(minutes)+":"+two(seconds);
-  }
-  tick(); setInterval(tick,1000);
-}
-function updateCountdownTiles(now){
-  if(!lastBest||!lastBest.date) return;
-  const target = lastBest.date;
-  const s = Math.floor((target - now)/1000);
-  const sign = s>=0? -1 : 1; // J- à venir, J+ passé
-  const sAbs = Math.abs(s);
-  const d = Math.floor(sAbs/86400);
-  const h = Math.floor((sAbs%86400)/3600);
-  const m = Math.floor((sAbs%3600)/60);
-  document.getElementById('tileCountdown').textContent = "J"+(sign<0?'-':'+')+d+" "+two(h)+":"+two(m);
-  document.getElementById('tileEta').textContent = "Approche min (UTC): "+target.toISOString().slice(0,16).replace('T',' ');
-}
-function drawGauges(){
-  const pct = computeProximityPct(new Date()) * 100;
-  const data=[{
-    type:"indicator", mode:"gauge+number", value:pct, number:{suffix:"%"},
-    gauge:{
-      axis:{range:[0,100]},
-      bar:{color:"#00ffd0"},
-      steps:[
-        {range:[0,25], color:"rgba(0,255,208,0.10)"},
-        {range:[25,50], color:"rgba(0,255,208,0.18)"},
-        {range:[50,75], color:"rgba(0,255,208,0.26)"},
-        {range:[75,100], color:"rgba(0,255,208,0.34)"}
-      ],
-      threshold:{line:{color:"#7df9ff",width:2}, thickness:0.6, value:90}
-    },
-    domain:{x:[0,1], y:[0,1]},
-    title:{text:"Proximité"}
-  }];
-  const layout={margin:{l:10,r:10,t:10,b:10},paper_bgcolor:"rgba(0,0,0,0)",plot_bgcolor:"rgba(0,0,0,0)"};
-  Plotly.newPlot('tileGauge', data, layout, {displayModeBar:false,responsive:true}).then(()=>{ dashReady=true; });
-}
-function initDashboard(){ drawGauges(); updateUTCtiles(new Date()); updateCountdownTiles(new Date()); }
-
-/* ---------- Animation ---------- */
-function startAnim(){ if(animTimer) return; animTimer=setInterval(stepAnim,100); animPlaying=true; document.getElementById("playBtn").textContent="Pause"; }
-function stopAnim(){ if(animTimer){ clearInterval(animTimer); animTimer=null; } animPlaying=false; document.getElementById("playBtn").textContent="Lecture"; }
-function stepAnim(){ const tr=document.getElementById("timeRange"); if(!tr) return; let v=parseFloat(tr.value); const min=parseFloat(tr.min), max=parseFloat(tr.max); const step=baseStepDays*animSpeed; v+=step; if(v>max){ v=min; } tr.value=v.toString(); scrubToDays(v); }
-
-/* ---------- Import manuel + fichier ---------- */
-function jdToDate(jd){ const ms=(jd-2440587.5)*86400000; return new Date(ms); }
-function parseManualInput(s){
-  if(!s||!s.trim()) throw new Error('Zone vide');
-  { // key=value simple
-    const o={}, re=/^\s*([a-zA-Z_]+)\s*=\s*([^\n\r#;]+)\s*$/gm; let m; while((m=re.exec(s))){ o[m[1]]=m[2].trim(); }
-    if(Object.keys(o).length){
-      return {
-        e:num(o.e), q:num(o.q), inc:num(o.inc), Omega:num(o.Omega),
-        omega:num(o.omega), tpISO:iso(o.tpISO||o.tp||o.Tp||o.t_peri||o.tp_cal)
-      };
-    }
-  }
-  const t=s.trim();
-  if((t.startsWith('{')&&t.endsWith('}'))||(t.startsWith('[')&&t.endsWith(']'))){
-    const j=JSON.parse(t);
-    const el=(j&&j.orbit&&j.orbit.elements)||(j&&j.orbital_elements)||(j&&j.elements)||(j&&j.results&&j.results[0])||(j&&j.orbits&&j.orbits[0]);
-    if(el){
-      return {
-        e:num(el.e||el.ecc||el.eccentricity),
-        q:num(el.q_au||el.q||el.perihelion_distance||el.q_au_1),
-        inc:num(el.i||el.i_deg||el.incl||el.inclination),
-        Omega:num(el.om||el.Omega||el.node||el.long_of_asc_node_deg),
-        omega:num(el.w||el.omega||el.arg_per||el.arg_peri||el.arg_of_perihelion_deg),
-        tpISO:iso(el.tp_tdb||el.Tp_tdb||el.tp||el.t_peri||el.t_perihelion||el.t_perihelion_jd||el.perih_time_tdb||el.tp_cal)
-      };
-    }
-  }
-  throw new Error('Format non reconnu');
-
-  function num(x){ const n=parseFloat(x); if(!isFinite(n)) throw new Error('Nombre invalide: '+x); return n; }
-  function iso(x){
-    if(!x) throw new Error('tp manquant');
-    if(typeof x==='number') return jdToDate(x).toISOString().slice(0,19);
-    const d=new Date(x); if(!isFinite(d.getTime())) throw new Error('Date invalide: '+x); return d.toISOString().slice(0,19);
-  }
-}
-
-/* ---------- Rebuild + Export ---------- */
-function renderClosest(best){
-  const km=best.dist*AU_KM, au=best.dist;
-  document.getElementById("closestInfo").textContent=
-    "Approche min (UTC): "+best.date.toISOString().slice(0,19).replace("T"," ") +
-    " | Δ="+kmWithUnit(km)+" ("+au.toFixed(6)+" AU) | v_rel ~ "+best.vRelKms.toFixed(1)+" km/s";
-}
-function drawFrom(p){
-  const data=computeEphem(p), rough=computeEarthApproach(p,365), best=refineClosest(rough);
-  lastBest=best; lastData=data;
-  setMoonDefaultsToUI(); applyMoonFromUI();
-  if(sceneReady) Plotly.purge('scene'); drawPlot(data);
-  if(chartReady) Plotly.purge('distChart'); drawDistanceChart(best);
-  renderClosest(best);
-  initDashboard();
-  startUTCClock(); startHudCountdown();
-  setTimeout(jumpToNow, 300);
-}
-function rebuildWithParams(p){
-  const data=computeEphem(p), rough=computeEarthApproach(p,365), best=refineClosest(rough);
-  lastBest=best; lastData=data;
-  if(sceneReady){ Plotly.purge('scene'); sceneReady=false; } drawPlot(data);
-  if(chartReady){ Plotly.purge('distChart'); chartReady=false; } drawDistanceChart(best);
-  renderClosest(best);
-  setTimeout(jumpToNow,300);
-}
-function exportDist(fmt){
-  if(!distSeries){ showError('Nothing to export','',0,0); return; }
-  const rows=[]; for(let i=0;i<distSeries.x.length;i++){ rows.push({date:distSeries.x[i],au:distSeries.y[i],mkm:distSeries.ykm[i]}); }
-  if(fmt==='json'){ const blob=new Blob([JSON.stringify(rows,null,2)],{type:'application/json'}); triggerDownload(blob,'atlas_distance.json'); }
-  else{ let csv='date,au,mkm\n'; for(let j=0;j<rows.length;j++){ csv+=rows[j].date+','+rows[j].au+','+rows[j].mkm+'\n'; } const blob2=new Blob([csv],{type:'text/csv'}); triggerDownload(blob2,'atlas_distance.csv'); }
-}
-function triggerDownload(blob,filename){ const a=document.createElement('a'); a.href=URL.createObjectURL(blob); a.download=filename; document.body.appendChild(a); a.click(); setTimeout(()=>{ URL.revokeObjectURL(a.href); a.remove(); },500); }
-
-/* ---------- Moon UI ---------- */
-function setMoonDefaultsToUI(){ const d=moonDefault(); document.getElementById('moonA').value=d.a_km; document.getElementById('moonE').value=d.e; document.getElementById('moonI').value=d.i_deg; document.getElementById('moonOmega').value=d.Omega_deg; document.getElementById('moonSmallOmega').value=d.omega_deg; document.getElementById('moonT').value=d.T_days; document.getElementById('moonEpoch').value='2000-01-01T12:00'; document.getElementById('moonM0').value=d.M0_deg; }
-function applyMoonFromUI(){
-  const a=parseFloat(document.getElementById('moonA').value), e=parseFloat(document.getElementById('moonE').value), i=parseFloat(document.getElementById('moonI').value);
-  const Om=parseFloat(document.getElementById('moonOmega').value), om=parseFloat(document.getElementById('moonSmallOmega').value);
-  const T=parseFloat(document.getElementById('moonT').value), epochStr=document.getElementById('moonEpoch').value, M0=parseFloat(document.getElementById('moonM0').value);
-  if(!(a>0&&e>=0&&e<1&&T>0)){ showError('Paramètres Lune invalides','',0,0); return; }
-  moonCtx=buildMoonCtx({a_km:a,e:e,i_deg:i,Omega_deg:Om,omega_deg:om,T_days:T,epochISO:epochStr+':00',M0_deg:M0});
-  if(sceneReady){ jumpToNow(); }
-}
-
-/* ---------- Camera helpers ---------- */
-function focusApproach(){
-  if(!sceneReady||!lastBest||!lastBest.date) return;
-  const E=lastBest, cx=(E.e.x+E.c.x)/2, cy=(E.e.y+E.c.y)/2, cz=(0+E.c.z)/2;
-  const span=Math.max(Math.abs(E.e.x-cx),Math.abs(E.c.x-cx),Math.abs(E.e.y-cy),Math.abs(E.c.y-cy),Math.abs(E.c.z-cz));
-  const R=Math.max(1.2*span,0.6);
-  Plotly.relayout("scene",{"scene.xaxis.range":[cx-R,cx+R],"scene.yaxis.range":[cy-R,cy+R],"scene.zaxis.range":[cz-R*0.35,cz+R*0.35]});
-}
-function resetView(){
-  if(!sceneReady) return;
-  Plotly.relayout("scene",{"scene.xaxis.autorange":true,"scene.yaxis.autorange":true,"scene.zaxis.autorange":true,"scene.camera":{"eye":{x:1.9,y:1.7,z:0.72}}});
-}
-function jumpToNow(){
-  if(!lastBest||!sceneReady) return;
-  const tr=document.getElementById('timeRange');
-  if(tr){
-    let d=(Date.now()-lastBest.ctx.tp)/1000/DAY_S;
-    d=clamp(Math.round(d*2)/2,-winDays,winDays);
-    tr.value=d.toString(); scrubToDays(d);
-  }
-}
-
-/* ---------- UI wiring ---------- */
-function selectOffline(name){
-  const lib=getOfflineLib(); if(!lib[name]){ toast('Objet introuvable en OFFLINE: '+name,false); return; }
-  rebuildWithParams(lib[name]);
-  const sb=document.getElementById('sourceBadge'); if(sb) sb.textContent='Source: OFFLINE (catalogue) — '+name;
-}
-function wireUI(){
-  // Buttons 3D
-  document.getElementById('fsBtn').onclick=()=>{ const de=document.documentElement; if(!document.fullscreenElement){ de.requestFullscreen&&de.requestFullscreen(); } else { document.exitFullscreen&&document.exitFullscreen(); } };
-  document.getElementById('focusBtn').onclick=()=>{ focusApproach(); };
-  document.getElementById('resetViewBtn').onclick=()=>{ resetView(); };
-  document.getElementById('nowBtn').onclick=()=>{ jumpToNow(); };
-
-  // Distance panel controls
-  document.getElementById('playBtn').onclick=()=>{ if(animPlaying) stopAnim(); else startAnim(); };
-  document.getElementById('speedSel').onchange=function(){ const s=parseFloat(this.value||'1'); animSpeed=(s>0?s:1); };
-  document.getElementById('stepSel').onchange=function(){ const v=parseFloat(this.value||'0.0416666667'); baseStepDays=(v>0?v:1/24); };
-  document.getElementById('windowSel').onchange=function(){ winDays=parseInt(this.value,10); drawDistanceChart(lastBest); const tr=document.getElementById('timeRange'); tr.min=(-winDays).toString(); tr.max=(winDays).toString(); tr.value=clamp(parseFloat(tr.value),-winDays,winDays).toString(); scrubToDays(parseFloat(tr.value)); };
-  document.getElementById('kmCheck').onchange=function(){ applyKmAxis(); updateDistanceNow(); };
-  document.getElementById('logY').onchange=function(){ applyLogAxis(); };
-  document.getElementById('timeRange').oninput=function(){ scrubToDays(parseFloat(this.value)); };
-  document.getElementById('followNow').onchange=function(){ followNow=!!this.checked; };
-  document.getElementById('safeMode').onchange=function(){ const dc=document.getElementById('distChart'); safeMode=!!this.checked; if(dc) dc.style.display = safeMode ? 'none':'block'; if(safeMode) stopAnim(); };
-  document.getElementById('zoomMinBtn').onclick=function(){
-    if(!lastBest||!chartReady) return;
-    Plotly.relayout("distChart", {"xaxis.range":[
-      new Date(lastBest.date.getTime()-highlightDays*DAY_S*1000).toISOString(),
-      new Date(lastBest.date.getTime()+highlightDays*DAY_S*1000).toISOString()
-    ]});
-  };
-  document.getElementById('applyHL').onclick=function(){ let v=parseInt(document.getElementById('hlDays').value||'7',10); if(v<1) v=1; if(v>60) v=60; highlightDays=v; if(lastBest) refreshHighlight(lastBest); };
-
-  // OFFLINE
-  document.getElementById('offlineLoad').onclick=function(){ const name=document.getElementById('offlineSelect').value; selectOffline(name); };
-  document.getElementById('offlineSave').onclick=function(){
-    const nm=(document.getElementById('offlineName').value||'ATLAS').trim();
-    if(!nm){ toast('Nom OFFLINE manquant', false); return; }
-    if(!lastBest||!lastBest.ctx){ toast('Aucune orbite courante à sauver', false); return; }
-    const ctx=lastBest.ctx;
-    const obj={ e:ctx.e, q:ctx.q, inc:ctx.inc, Omega:ctx.Omega, omega:ctx.omega, tpISO:ctx.tp.toISOString().slice(0,19) };
-    setOfflineLibEntry(nm, obj);
-    populateOfflineSelect();
-    toast('Sauvé dans OFFLINE : '+nm, true);
-  };
-  document.getElementById('offlineList').onclick=function(){ const txt=offlineListText(); document.getElementById('manualText').value = txt; toast('Catalogue OFFLINE affiché dans la zone texte', true); };
-
-  // Import manuel
-  document.getElementById('importSample').onclick=function(){ const t=document.getElementById('manualText'); t.value=['e=6.138559','q=1.356320','inc=175.11310','Omega=322.15740','omega=128.01270','tpISO=2025-10-29T11:35:31'].join('\n'); };
-  document.getElementById('manualLoad').onclick=function(){
-    try{
-      const p=parseManualInput(document.getElementById('manualText').value);
-      localStorage.setItem('atlas_manual_orbit',JSON.stringify(p));
-      rebuildWithParams(p);
-      const sb=document.getElementById('sourceBadge'); if(sb) sb.textContent='Source: MANUEL';
-      toast('Éléments chargés (manuel)',true);
-    }catch(e){ toast('Import manuel: '+(e&&e.message||e),false); }
-  };
-
-  // Import fichier
-  document.getElementById('importFileBtn').onclick=function(){ document.getElementById('importFile').click(); };
-  document.getElementById('importFile').onchange=function(){
-    const f=this.files&&this.files[0]; if(!f) return;
-    const r=new FileReader();
-    r.onload=function(){
-      try{
-        const p=parseManualInput(String(r.result));
-        localStorage.setItem('atlas_manual_orbit',JSON.stringify(p));
-        rebuildWithParams(p);
-        const sb=document.getElementById('sourceBadge'); if(sb) sb.textContent='Source: FICHIER';
-        toast('Éléments chargés depuis fichier',true);
-      }catch(e){ toast('Import fichier: '+(e&&e.message||e),false); }
-    };
-    r.readAsText(f);
-  };
-
-  // Export
-  document.getElementById('exportCsv').onclick=()=>exportDist('csv');
-  document.getElementById('exportJson').onclick=()=>exportDist('json');
-}
-
-/* ---------- Boot ---------- */
-function boot(){
-  populateOfflineSelect();
-  const lib=getOfflineLib();
-  const seed=lib["3I/ATLAS"]||OFFLINE_LIB_DEFAULT["3I/ATLAS"];
-  drawFrom(seed);
-}
-if(document.readyState==='loading'){
-  document.addEventListener('DOMContentLoaded',()=>{ boot(); wireUI(); });
-}else{ boot(); wireUI(); }
-
-})();
-</script>
+        init();
+    </script>
 </body>
 </html>
+
+
