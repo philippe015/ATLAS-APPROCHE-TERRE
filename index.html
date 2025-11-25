@@ -1,511 +1,319 @@
 <!DOCTYPE html>
-<html lang="fr" class="light">
+<html lang="fr">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>Calepin SSIAP - v11.3 Themes</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mon Calepin - Partageable</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <script>
-        tailwind.config = {
-            darkMode: 'class',
-            theme: { extend: { 
-                colors: { darkbg: '#0f172a', darkpaper: '#1e293b' },
-                animation: { 'fade-in': 'fadeIn 0.3s ease-out' },
-                keyframes: { fadeIn: { '0%': { opacity: '0', transform: 'translateY(10px)' }, '100%': { opacity: '1', transform: 'translateY(0)' } } }
-            } }
-        }
-    </script>
     <style>
-        /* Reset & Base */
-        html, body { overflow-x: hidden; width: 100%; }
-        body { font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; -webkit-tap-highlight-color: transparent; transition: background-color 0.3s, color 0.3s; }
-        
-        .no-scrollbar::-webkit-scrollbar { display: none; }
-        .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
-        
-        textarea { 
-            line-height: 1.6; min-height: 60vh;
-            overflow-wrap: break-word; word-wrap: break-word; word-break: break-word;
-            white-space: pre-wrap; width: 100%; max-width: 100%;
-            transition: color 0.3s;
-        }
-
-        /* --- THEMES PERSONNALISÉS --- */
-        
-        /* 1. FORET (Vert) */
-        html[data-theme="forest"] body { background-color: #ecfdf5; color: #064e3b; }
-        html[data-theme="forest"] aside { background-color: #d1fae5; border-color: #6ee7b7; }
-        html[data-theme="forest"] header { background-color: rgba(209, 250, 229, 0.9); border-color: #6ee7b7; }
-        html[data-theme="forest"] .paper-sheet { background-color: #ffffff; border: 1px solid #a7f3d0; box-shadow: 0 4px 6px rgba(5, 150, 105, 0.1); }
-        html[data-theme="forest"] textarea, html[data-theme="forest"] input { color: #065f46; }
-        html[data-theme="forest"] .icon-btn { color: #047857; }
-
-        /* 2. NOCTURNE (Rouge/Noir - Vision de nuit) */
-        html[data-theme="night"] body { background-color: #000000; color: #ef4444; }
-        html[data-theme="night"] aside { background-color: #111111; border-color: #450a0a; }
-        html[data-theme="night"] header { background-color: rgba(0, 0, 0, 0.9); border-color: #450a0a; }
-        html[data-theme="night"] .paper-sheet { background-color: #0a0a0a; border: 1px solid #7f1d1d; box-shadow: none; }
-        html[data-theme="night"] textarea, html[data-theme="night"] input { color: #f87171; background: transparent; }
-        html[data-theme="night"] ::placeholder { color: #7f1d1d; }
-        html[data-theme="night"] button { color: #ef4444; border-color: #7f1d1d; }
-        html[data-theme="night"] .bg-white { background-color: #111; color: #ef4444; border-color: #450a0a; }
-        
-        /* 3. TERMINAL (Vert/Noir - Matrix) */
-        html[data-theme="terminal"] body { background-color: #0c0c0c; color: #22c55e; font-family: 'Courier New', Courier, monospace; }
-        html[data-theme="terminal"] aside { background-color: #050505; border-color: #14532d; }
-        html[data-theme="terminal"] header { background-color: rgba(12, 12, 12, 0.95); border-color: #14532d; }
-        html[data-theme="terminal"] .paper-sheet { background-color: #000000; border: 1px solid #22c55e; box-shadow: 0 0 10px rgba(34, 197, 94, 0.2); }
-        html[data-theme="terminal"] textarea, html[data-theme="terminal"] input { color: #4ade80; font-family: 'Courier New', Courier, monospace; }
-        html[data-theme="terminal"] ::placeholder { color: #14532d; }
-        html[data-theme="terminal"] button { color: #22c55e; }
-
-        /* Animations */
-        .mic-active { animation: pulse-red 1.5s infinite; background-color: #fee2e2; border-color: #ef4444; color: #dc2626; }
-        @keyframes pulse-red { 0% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.7); } 70% { box-shadow: 0 0 0 10px rgba(239, 68, 68, 0); } 100% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0); } }
-        
-        .horizontal-scroll-container { overflow-x: auto; -webkit-overflow-scrolling: touch; touch-action: pan-x; scrollbar-width: none; -ms-overflow-style: none; display: flex; flex: 1; min-width: 0; }
-        .horizontal-scroll-container::-webkit-scrollbar { display: none; }
-
-        @media print {
-            aside, header, .toolbar, #toast, button, #backup-zone { display: none !important; }
-            body, .editor-container { background: white !important; color: black !important; height: auto !important; overflow: visible !important; padding: 0 !important; }
-            textarea { resize: none; border: none; height: auto !important; }
-        }
+        .custom-scrollbar::-webkit-scrollbar { width: 6px; }
+        .custom-scrollbar::-webkit-scrollbar-track { background: transparent; }
+        .custom-scrollbar::-webkit-scrollbar-thumb { background-color: #cbd5e1; border-radius: 20px; }
+        .custom-scrollbar::-webkit-scrollbar-thumb:hover { background-color: #94a3b8; }
+        mark { background-color: #fef08a; color: #854d0e; padding: 0 2px; border-radius: 2px; }
     </style>
 </head>
-<body class="h-screen flex overflow-hidden bg-gray-100 dark:bg-gray-900 text-slate-800 dark:text-slate-200 transition-colors duration-300">
+<body class="bg-slate-100 h-screen flex overflow-hidden font-sans text-slate-900">
 
-    <!-- MENU LATÉRAL -->
-    <aside id="sidebar" class="w-80 bg-white dark:bg-slate-800 border-r border-gray-200 dark:border-gray-700 flex flex-col transform -translate-x-full md:translate-x-0 transition-transform duration-300 absolute md:relative z-50 h-full shadow-2xl md:shadow-none">
-        <div class="p-4 border-b border-gray-100 dark:border-gray-700 bg-gray-50 dark:bg-slate-900/50 backdrop-blur">
-            <div class="flex items-center justify-between mb-4">
-                <div class="flex items-center gap-3">
-                    <div class="bg-red-600 text-white p-2 rounded-lg shadow-md"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 2l9 4.9V17L12 22 3 17V6.9l9-4.9z"></path></svg></div>
-                    <h1 class="text-lg font-bold tracking-tight">SSIAP NOTE <span class="text-[10px] bg-gray-200 dark:bg-gray-700 px-1 rounded text-gray-500">v11.3</span></h1>
-                </div>
-                <button onclick="toggleSidebar()" class="md:hidden p-2 text-gray-400 hover:bg-gray-200 rounded-full"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg></button>
+    <!-- SIDEBAR -->
+    <aside id="sidebar" class="w-80 bg-white border-r border-slate-200 flex flex-col transform transition-transform duration-200 absolute md:relative z-30 h-full -translate-x-full md:translate-x-0">
+        <div class="p-4 border-b border-slate-100 space-y-3">
+            <div class="flex items-center justify-between">
+                <h1 class="text-xl font-bold text-slate-800 flex items-center gap-2">
+                    <span class="bg-indigo-600 text-white p-1.5 rounded-md">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>
+                    </span>
+                    Calepin Partagé
+                </h1>
+                <button onclick="toggleSidebar()" class="md:hidden text-slate-400"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 6L6 18M6 6l12 12"/></svg></button>
             </div>
-            <button onclick="createNewNote()" class="w-full py-3 bg-slate-900 dark:bg-indigo-600 hover:bg-slate-800 text-white rounded-xl font-bold shadow-lg active:scale-95 transition-all flex items-center justify-center gap-2">
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg> Nouvelle Note
-            </button>
-            <div class="mt-3 relative">
-                <svg class="absolute left-3 top-3 text-gray-400" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
-                <input type="text" oninput="handleSearch(this.value)" placeholder="Rechercher..." class="w-full pl-9 pr-3 py-2 bg-white dark:bg-slate-700 border border-gray-200 dark:border-gray-600 rounded-lg text-sm focus:ring-2 focus:ring-indigo-500 outline-none transition-all">
+            
+            <div class="grid grid-cols-2 gap-2">
+                <button onclick="createNewNote()" class="flex items-center justify-center gap-2 bg-indigo-600 hover:bg-indigo-700 text-white py-2 px-3 rounded-lg transition-colors font-medium shadow-sm text-sm">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
+                    Nouvelle
+                </button>
+                <!-- Bouton IMPORT -->
+                <button onclick="document.getElementById('importInput').click()" class="flex items-center justify-center gap-2 bg-white border border-slate-300 hover:bg-slate-50 text-slate-700 py-2 px-3 rounded-lg transition-colors font-medium shadow-sm text-sm" title="Importer une note reçue">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
+                    Importer
+                </button>
+                <input type="file" id="importInput" accept=".json" class="hidden" onchange="handleImport(this)">
+            </div>
+
+            <div class="relative group">
+                <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-slate-400 group-focus-within:text-indigo-500">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+                </div>
+                <input type="text" id="search-input" oninput="handleSearch(this.value)" placeholder="Rechercher..." class="block w-full pl-9 pr-3 py-2 bg-slate-50 border border-slate-200 rounded-lg text-sm placeholder-slate-400 focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 transition-all">
             </div>
         </div>
-
-        <div id="notes-list" class="flex-1 overflow-y-auto p-2 space-y-2 bg-gray-50/50 dark:bg-slate-900/50 no-scrollbar"></div>
-
-        <!-- ZONE DE SAUVEGARDE (BACKUP) -->
-        <div id="backup-zone" class="p-3 border-t border-gray-200 dark:border-gray-700 bg-slate-50 dark:bg-slate-900 flex flex-col gap-3">
-             <div class="flex justify-between items-center">
-                 <span class="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Sauvegarde</span>
-                 <span id="save-indicator" class="text-[10px] text-emerald-500 font-bold opacity-0 transition-opacity">Sync OK</span>
-             </div>
-             <div class="grid grid-cols-2 gap-2">
-                <button onclick="downloadBackup()" class="flex flex-col items-center justify-center p-2 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg hover:bg-blue-50 dark:hover:bg-slate-700 transition-colors group">
-                    <svg class="text-blue-500 mb-1" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
-                    <span class="text-xs font-bold text-slate-600 dark:text-slate-300">Sauver</span>
-                </button>
-                <button onclick="document.getElementById('backupInput').click()" class="flex flex-col items-center justify-center p-2 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg hover:bg-orange-50 dark:hover:bg-slate-700 transition-colors group">
-                    <svg class="text-orange-500 mb-1" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="17 8 12 3 7 8"></polyline><line x1="12" y1="3" x2="12" y2="15"></line></svg>
-                    <span class="text-xs font-bold text-slate-600 dark:text-slate-300">Restaurer</span>
-                </button>
-                <input type="file" id="backupInput" accept=".json" class="hidden" onchange="importBackup(this)">
-             </div>
-             
-             <!-- IA INSTALLATION -->
-             <button id="btn-install-ai" onclick="window.installAI()" class="w-full py-1.5 px-2 text-left rounded-lg text-xs text-slate-500 hover:bg-white dark:hover:bg-slate-700 flex items-center justify-between">
-                 <span id="ai-status-text">Gérer l'IA locale</span>
-                 <div id="ai-status-dot" class="w-2 h-2 rounded-full bg-gray-400"></div>
-             </button>
-             <div id="ai-progress-container" class="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-1 hidden relative overflow-hidden">
-                 <div id="ai-progress" class="bg-indigo-600 h-full rounded-full" style="width: 0%"></div>
-             </div>
+        <div id="notes-list" class="flex-1 overflow-y-auto p-2 space-y-2 custom-scrollbar"></div>
+        <div class="p-3 text-xs text-center text-slate-400 border-t border-slate-100 bg-slate-50">
+            Stockage Local Sécurisé
         </div>
     </aside>
 
-    <div id="overlay" onclick="toggleSidebar()" class="fixed inset-0 bg-black/50 backdrop-blur-sm z-40 hidden md:hidden transition-opacity"></div>
+    <div id="overlay" onclick="toggleSidebar()" class="fixed inset-0 bg-black/20 z-20 hidden backdrop-blur-sm md:hidden"></div>
 
     <!-- MAIN CONTENT -->
-    <main class="flex-1 flex flex-col h-full relative w-full max-w-full">
-        <header class="h-14 bg-white dark:bg-slate-900 border-b border-gray-200 dark:border-gray-700 flex items-center shrink-0 z-20 sticky top-0 shadow-sm overflow-x-auto no-scrollbar">
-            <button onclick="toggleSidebar()" class="md:hidden p-3 text-gray-500 hover:bg-gray-100 dark:hover:bg-slate-700 shrink-0"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="3" y1="12" x2="21" y2="12"></line><line x1="3" y1="6" x2="21" y2="6"></line><line x1="3" y1="18" x2="21" y2="18"></line></svg></button>
-            
-            <div class="horizontal-scroll-container flex items-center px-2">
-                <div class="flex items-center gap-1 pr-6 min-w-max"> 
-                    
-                    <!-- BOUTON THEME (PALETTE) -->
-                    <button onclick="openModal('theme-modal')" class="p-2 text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg shrink-0" title="Changer le thème">
-                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2.69l5.66 5.66a8 8 0 1 1-11.31 0z"></path></svg>
-                    </button>
-
-                    <div class="h-6 w-px bg-gray-300 dark:bg-gray-700 mx-1"></div>
-
-                    <button onclick="openModal('template-modal')" class="flex items-center gap-1 px-3 py-1.5 text-sm font-medium bg-indigo-50 dark:bg-indigo-900/30 text-indigo-600 dark:text-indigo-400 rounded-lg border border-indigo-100 dark:border-indigo-800 hover:bg-indigo-100 shrink-0"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect><line x1="9" y1="9" x2="15" y2="9"></line><line x1="9" y1="13" x2="15" y2="13"></line><line x1="9" y1="17" x2="11" y2="17"></line></svg> Modèles</button>
-                    <button onclick="insertText('\n[ ] ')" class="p-2 text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-slate-800 rounded-lg shrink-0"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 11l3 3L22 4"></path><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"></path></svg></button>
-                    
-                    <div class="h-6 w-px bg-gray-300 dark:bg-gray-700 mx-1"></div>
-
-                    <button id="btn-mic" onclick="toggleDictation()" class="p-2 text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-slate-800 rounded-lg shrink-0"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"></path><path d="M19 10v2a7 7 0 0 1-14 0v-2"></path><line x1="12" y1="19" x2="12" y2="23"></line><line x1="8" y1="23" x2="16" y2="23"></line></svg></button>
-                    <button onclick="triggerCamera()" class="p-2 text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-slate-800 rounded-lg shrink-0"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"></path><circle cx="12" cy="13" r="4"></circle></svg></button>
-                    <input type="file" id="cameraInput" accept="image/*" capture="environment" class="hidden" onchange="handleImageUpload(this)">
-                    <button onclick="document.getElementById('galleryInput').click()" class="p-2 text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-slate-800 rounded-lg shrink-0"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect><circle cx="8.5" cy="8.5" r="1.5"></circle><polyline points="21 15 16 10 5 21"></polyline></svg></button>
-                    <input type="file" id="galleryInput" accept="image/*" class="hidden" onchange="handleImageUpload(this)">
-                    
-                    <div class="h-6 w-px bg-gray-300 dark:bg-gray-700 mx-1"></div>
-
-                    <button onclick="window.runAISummary()" class="p-2 text-violet-600 dark:text-violet-400 hover:bg-violet-50 dark:hover:bg-violet-900/30 rounded-lg font-bold flex items-center gap-1 shrink-0"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2a10 10 0 1 0 10 10H12V2z"></path><path d="M12 2a10 10 0 0 1 10 10"></path><path d="M12 22V12"></path></svg> IA</button>
-                    <button onclick="openExportModal()" class="p-2 text-gray-600 hover:bg-gray-100 dark:text-gray-300 rounded-lg shrink-0"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg></button>
-                    <button onclick="deleteCurrentNote()" class="p-2 text-red-400 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg shrink-0"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg></button>
-                </div>
-            </div>
+    <main class="flex-1 flex flex-col h-full bg-slate-50 w-full relative">
+        <header class="md:hidden h-14 border-b border-slate-200 bg-white flex items-center justify-between px-4 shrink-0">
+            <button onclick="toggleSidebar()" class="p-2 -ml-2 text-slate-600">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="3" y1="12" x2="21" y2="12"></line><line x1="3" y1="6" x2="21" y2="6"></line><line x1="3" y1="18" x2="21" y2="18"></line></svg>
+            </button>
+            <span class="font-semibold text-slate-700">Mon Calepin</span>
+            <div class="w-8"></div>
         </header>
 
-        <div class="flex-1 overflow-y-auto p-0 md:p-8 bg-white dark:bg-slate-950 md:bg-gray-100 md:dark:bg-slate-950" id="main-scroll">
-            <div class="editor-container w-full max-w-3xl mx-auto bg-white dark:bg-slate-900 md:shadow-xl md:rounded-2xl min-h-full p-4 md:p-12 flex flex-col gap-4 animate-in fade-in duration-300 overflow-hidden">
-                
-                <textarea id="note-title" rows="1" oninput="autoResize(this); triggerAutoSave();" placeholder="Titre de la note..." class="w-full text-3xl md:text-4xl font-extrabold text-slate-900 dark:text-white border-none outline-none bg-transparent placeholder-gray-300 dark:placeholder-gray-600 resize-none overflow-hidden leading-tight break-words whitespace-pre-wrap" style="min-height: 48px;"></textarea>
-                
-                <div id="note-date" class="text-xs font-bold text-gray-400 uppercase tracking-widest -mt-2"></div>
+        <div class="h-16 border-b border-slate-200 bg-white flex items-center justify-between px-4 md:px-8 shrink-0 shadow-sm z-10">
+            <div id="status-msg" class="text-sm text-slate-500 flex items-center gap-2">Prêt</div>
 
-                <div id="summary-box" class="hidden p-4 bg-indigo-50 dark:bg-indigo-900/20 rounded-xl border border-indigo-100 dark:border-indigo-800 relative w-full overflow-hidden">
-                    <h3 class="text-xs font-bold text-indigo-600 dark:text-indigo-400 uppercase mb-2 flex items-center gap-2"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M12 2a10 10 0 1 0 10 10H12V2z"></path></svg> Résumé IA</h3>
-                    <p id="summary-content" class="text-sm text-gray-700 dark:text-gray-300 leading-relaxed break-words"></p>
-                    <button onclick="document.getElementById('summary-box').classList.add('hidden')" class="absolute top-2 right-2 text-indigo-300 p-1"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg></button>
-                </div>
-
-                <textarea id="note-content" oninput="triggerAutoSave(); autoResize(this)" placeholder="Commencez à écrire..." class="w-full resize-none text-lg text-slate-700 dark:text-slate-300 border-none outline-none bg-transparent placeholder-gray-300 dark:placeholder-gray-600 break-words whitespace-pre-wrap"></textarea>
+            <div class="flex items-center gap-2 md:gap-3">
+                <!-- Bouton PARTAGER (Export JSON) -->
+                <button onclick="shareNoteFile()" class="flex items-center gap-2 bg-sky-50 text-sky-700 border border-sky-200 hover:bg-sky-100 px-3 py-2 rounded-lg transition-colors text-sm font-medium" title="Envoyer cette note à un ami (Fichier)">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="18" cy="5" r="3"></circle><circle cx="6" cy="12" r="3"></circle><circle cx="18" cy="19" r="3"></circle><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"></line><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"></line></svg>
+                    <span class="hidden lg:inline">Partager Note</span>
+                </button>
                 
-                <div id="image-grid-container" class="hidden mt-8 pt-4 border-t border-gray-100 dark:border-gray-800 w-full">
-                    <div class="flex items-center justify-between mb-4">
-                        <h3 class="text-xs font-bold text-gray-400 uppercase tracking-wider">Pièces jointes</h3>
-                    </div>
-                    <div id="image-grid" class="flex flex-wrap gap-4 items-start relative w-full"></div>
-                </div>
+                <div class="w-px h-6 bg-slate-200 mx-1"></div>
+
+                <input type="file" id="imageInput" accept="image/*" class="hidden" onchange="handleImageUpload(this)">
+                <button onclick="document.getElementById('imageInput').click()" class="p-2 md:px-3 md:py-2 text-slate-600 hover:text-indigo-600 hover:bg-indigo-50 rounded-lg transition-colors" title="Ajouter une photo">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect><circle cx="8.5" cy="8.5" r="1.5"></circle><polyline points="21 15 16 10 5 21"></polyline></svg>
+                </button>
+
+                <!-- Bouton Export HTML (Visuel) -->
+                <button onclick="exportHTML()" class="p-2 md:px-3 md:py-2 text-slate-600 hover:text-indigo-600 hover:bg-indigo-50 rounded-lg transition-colors" title="Visualiser en HTML (Lecture seule)">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline></svg>
+                </button>
+
+                <div class="w-px h-6 bg-slate-200 mx-1"></div>
+
+                <button onclick="saveCurrentNote()" class="bg-emerald-600 hover:bg-emerald-700 text-white px-4 py-2 rounded-lg flex items-center gap-2 shadow-sm transition-colors font-medium text-sm">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"></path><polyline points="17 21 17 13 7 13 7 21"></polyline><polyline points="7 3 7 8 15 8"></polyline></svg>
+                    <span class="hidden md:inline">Sauvegarder</span>
+                </button>
+            </div>
+        </div>
+
+        <div class="flex-1 overflow-y-auto p-4 md:p-8 max-w-4xl mx-auto w-full">
+            <input type="text" id="note-title" placeholder="Titre de la note..." class="w-full text-3xl md:text-4xl font-bold text-slate-800 placeholder-slate-300 border-none outline-none bg-transparent mb-6">
+            <textarea id="note-content" placeholder="Commencez à écrire ici..." class="w-full h-[40vh] md:h-[50vh] resize-none text-lg text-slate-600 placeholder-slate-300 border-none outline-none bg-transparent leading-relaxed"></textarea>
+            <div id="image-grid-container" class="hidden mt-8 border-t border-slate-200 pt-6">
+                <h3 class="text-sm font-semibold text-slate-500 uppercase tracking-wider mb-4 flex items-center gap-2">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect><circle cx="8.5" cy="8.5" r="1.5"></circle><polyline points="21 15 16 10 5 21"></polyline></svg>
+                    Photos jointes (<span id="img-count">0</span>)
+                </h3>
+                <div id="image-grid" class="grid grid-cols-2 md:grid-cols-3 gap-4"></div>
             </div>
         </div>
     </main>
 
-    <!-- MODAL THEMES -->
-    <div id="theme-modal" class="fixed inset-0 z-50 hidden items-center justify-center bg-black/50 backdrop-blur-sm p-4 fade-enter">
-        <div class="bg-white dark:bg-slate-900 rounded-2xl shadow-2xl max-w-xs w-full border border-gray-200 dark:border-gray-800 overflow-hidden">
-            <div class="p-4 border-b border-gray-100 dark:border-gray-800 flex justify-between items-center">
-                <h3 class="font-bold text-lg dark:text-white">Choisir un thème</h3>
-                <button onclick="closeModal('theme-modal')" class="text-gray-400"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg></button>
+    <!-- TOAST -->
+    <div id="toast" class="fixed top-4 right-4 z-50 px-4 py-2 rounded-lg shadow-lg text-white text-sm font-medium transition-opacity duration-300 opacity-0 pointer-events-none transform -translate-y-2">Message</div>
+
+    <!-- EXPORT HTML VISUAL MODAL -->
+    <div id="export-modal" class="fixed inset-0 z-50 hidden items-center justify-center bg-black/60 backdrop-blur-sm p-4">
+        <div class="bg-white rounded-xl shadow-2xl max-w-lg w-full p-6 flex flex-col max-h-[90vh]">
+            <div class="flex justify-between items-center mb-4">
+                <h2 class="text-xl font-bold text-slate-800">Visualisation HTML</h2>
+                <button onclick="closeExportModal()" class="text-slate-400 hover:text-slate-600"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg></button>
             </div>
-            <div class="p-2 grid grid-cols-1 gap-2">
-                <button onclick="setTheme('light')" class="w-full text-left p-3 hover:bg-gray-100 dark:hover:bg-slate-800 rounded-xl flex items-center gap-3"><div class="w-6 h-6 rounded-full border border-gray-300 bg-white"></div> <span class="text-slate-800 dark:text-white font-medium">Clair (Standard)</span></button>
-                <button onclick="setTheme('dark')" class="w-full text-left p-3 hover:bg-gray-100 dark:hover:bg-slate-800 rounded-xl flex items-center gap-3"><div class="w-6 h-6 rounded-full bg-slate-900 border border-slate-600"></div> <span class="text-slate-800 dark:text-white font-medium">Sombre</span></button>
-                <button onclick="setTheme('forest')" class="w-full text-left p-3 hover:bg-green-50 dark:hover:bg-slate-800 rounded-xl flex items-center gap-3"><div class="w-6 h-6 rounded-full bg-emerald-100 border border-emerald-500"></div> <span class="text-emerald-700 dark:text-emerald-400 font-medium">Forêt (Vert)</span></button>
-                <button onclick="setTheme('night')" class="w-full text-left p-3 hover:bg-red-50 dark:hover:bg-slate-800 rounded-xl flex items-center gap-3"><div class="w-6 h-6 rounded-full bg-black border border-red-600"></div> <span class="text-red-600 dark:text-red-400 font-medium">Nocturne (Rouge)</span></button>
-                <button onclick="setTheme('terminal')" class="w-full text-left p-3 hover:bg-gray-100 dark:hover:bg-slate-800 rounded-xl flex items-center gap-3"><div class="w-6 h-6 rounded-full bg-black border border-green-500 font-mono flex items-center justify-center text-[10px] text-green-500">&gt;_</div> <span class="text-green-600 dark:text-green-400 font-mono">Terminal</span></button>
-            </div>
+            <textarea id="export-area" readonly class="w-full flex-1 min-h-[200px] p-3 bg-slate-100 border border-slate-300 rounded-lg font-mono text-xs text-slate-600 resize-none mb-4" onclick="this.select()"></textarea>
+            <button onclick="copyToClipboard()" class="w-full flex items-center justify-center gap-2 p-3 rounded-lg font-bold text-white bg-indigo-600 hover:bg-indigo-700 transition-colors">Copier le code</button>
         </div>
     </div>
-
-    <!-- MODAL TEMPLATES -->
-    <div id="template-modal" class="fixed inset-0 z-50 hidden items-center justify-center bg-black/50 backdrop-blur-sm p-4 fade-enter">
-        <div class="bg-white dark:bg-slate-900 rounded-2xl shadow-2xl max-w-sm w-full border border-gray-200 dark:border-gray-800 overflow-hidden">
-            <div class="p-4 border-b border-gray-100 dark:border-gray-800 flex justify-between items-center">
-                <h3 class="font-bold text-lg dark:text-white">Modèles Rapides</h3>
-                <button onclick="closeModal('template-modal')" class="text-gray-400"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg></button>
-            </div>
-            <div class="p-2 max-h-[60vh] overflow-y-auto grid grid-cols-1 gap-1">
-                <button onclick="applyTemplate('cours')" class="text-left p-3 hover:bg-gray-50 dark:hover:bg-slate-800 rounded-xl flex items-center gap-3"><span class="text-2xl">📚</span> <div><div class="font-bold text-sm dark:text-white">Cours Théorique</div><div class="text-xs text-gray-500">Prise de notes standard</div></div></button>
-                <button onclick="applyTemplate('extincteur')" class="text-left p-3 hover:bg-gray-50 dark:hover:bg-slate-800 rounded-xl flex items-center gap-3"><span class="text-2xl">🧯</span> <div><div class="font-bold text-sm dark:text-white">Vérif. Extincteur</div><div class="text-xs text-gray-500">Checklist de contrôle</div></div></button>
-                <button onclick="applyTemplate('ronde')" class="text-left p-3 hover:bg-gray-50 dark:hover:bg-slate-800 rounded-xl flex items-center gap-3"><span class="text-2xl">🔦</span> <div><div class="font-bold text-sm dark:text-white">Ronde de Sécurité</div><div class="text-xs text-gray-500">Points de vigilance</div></div></button>
-                <button onclick="applyTemplate('calculs')" class="text-left p-3 hover:bg-gray-50 dark:hover:bg-slate-800 rounded-xl flex items-center gap-3"><span class="text-2xl">🧮</span> <div><div class="font-bold text-sm dark:text-white">Calculs Dégagements</div><div class="text-xs text-gray-500">Formulaire UP</div></div></button>
-            </div>
-        </div>
-    </div>
-    <div id="export-modal" class="fixed inset-0 z-50 hidden items-center justify-center bg-black/50 backdrop-blur-sm p-4 fade-enter"><div class="bg-white dark:bg-slate-900 rounded-2xl shadow-2xl max-w-sm w-full border border-gray-200 dark:border-gray-800 p-4"><h3 class="font-bold mb-4 text-center dark:text-white">Exporter</h3><button onclick="downloadSingleNote()" class="w-full py-3 bg-indigo-600 text-white rounded-xl font-bold mb-2">Fichier HTML (Autonome)</button><button onclick="closeModal('export-modal')" class="w-full py-2 text-gray-500">Annuler</button></div></div>
-    <div id="toast" class="fixed top-20 right-4 z-50 px-4 py-2 rounded-lg shadow-xl bg-slate-800 text-white text-sm font-bold transition-all duration-300 opacity-0 pointer-events-none transform -translate-y-2"></div>
-
-    <!-- MODULE IA (ESM) -->
-    <script type="module">
-        import { pipeline, env } from 'https://cdn.jsdelivr.net/npm/@xenova/transformers@2.16.0';
-        env.allowLocalModels = false;
-        env.useBrowserCache = true;
-        let generator = null;
-        let downloadAttempt = 0;
-
-        // Fonction d'installation manuelle
-        window.installAI = async function() {
-            const btn = document.getElementById('btn-install-ai');
-            const dot = document.getElementById('ai-status-dot');
-            const txt = document.getElementById('ai-status-text');
-            const barContainer = document.getElementById('ai-progress-container');
-            const bar = document.getElementById('ai-progress');
-            const progressText = document.getElementById('ai-progress-text');
-
-            if(generator) { showToast("IA déjà prête !"); return; }
-
-            btn.disabled = true;
-            txt.innerText = "Initialisation...";
-            barContainer.classList.remove('hidden');
-            progressText.classList.remove('hidden');
-            dot.classList.replace('bg-gray-400', 'bg-yellow-400');
-            dot.classList.add('animate-pulse');
-
-            try {
-                generator = await pipeline('summarization', 'Xenova/distilbart-cnn-6-6', {
-                    progress_callback: (data) => {
-                        if (data.status === 'progress') {
-                            const pct = Math.round(data.progress || 0);
-                            bar.style.width = pct + '%';
-                            txt.innerText = `Téléchargement...`;
-                            progressText.innerText = `${data.file} : ${pct}%`;
-                        }
-                        if (data.status === 'done') {
-                             progressText.innerText = "Chargement...";
-                        }
-                    }
-                });
-                
-                // Succès & Persistance
-                localStorage.setItem('ssiap_ai_installed', 'true');
-                updateAIStatusUI();
-                showToast("IA installée avec succès !");
-
-            } catch (err) {
-                console.error(err);
-                txt.innerText = "Echec (Réessayer)";
-                progressText.innerText = "Vérifiez connexion";
-                dot.classList.replace('bg-yellow-400', 'bg-red-500');
-                btn.disabled = false;
-                btn.onclick = () => { 
-                    downloadAttempt++;
-                    window.installAI(); // Retry
-                };
-            }
-        };
-        
-        window.updateAIStatusUI = function() {
-            const dot = document.getElementById('ai-status-dot');
-            const txt = document.getElementById('ai-status-text');
-            const icon = document.getElementById('ai-download-icon');
-            const barContainer = document.getElementById('ai-progress-container');
-            const pText = document.getElementById('ai-progress-text');
-
-            if(localStorage.getItem('ssiap_ai_installed') === 'true') {
-                txt.innerText = "IA Prête (Offline)";
-                if(dot) dot.className = "w-2 h-2 rounded-full bg-green-500";
-                if(icon) icon.style.display = 'none';
-                if(barContainer) barContainer.classList.add('hidden');
-                if(pText) pText.classList.add('hidden');
-            }
-        }
-
-        window.runAISummary = async function() {
-            const c = document.getElementById('note-content').value;
-            if(!c || c.length<20) { showToast("Texte trop court pour l'IA", "error"); return; }
-            
-            if(!generator) {
-                if (localStorage.getItem('ssiap_ai_installed') === 'true') {
-                    try {
-                        showToast("Chargement moteur IA...");
-                        generator = await pipeline('summarization', 'Xenova/distilbart-cnn-6-6'); 
-                    } catch(e) {
-                        localStorage.removeItem('ssiap_ai_installed');
-                        showToast("Erreur cache IA. Réinstallez.");
-                        return;
-                    }
-                } else {
-                    await window.installAI();
-                    if(!generator) return;
-                }
-            }
-
-            try {
-                showToast("Analyse en cours...");
-                const out = await generator(c, { max_new_tokens: 100, min_length: 10 });
-                document.getElementById('summary-content').innerText = out[0].summary_text;
-                document.getElementById('summary-box').classList.remove('hidden');
-                window.saveCurrentNote(); 
-                showToast("Résumé généré !");
-            } catch(e) { console.error(e); showToast("Erreur IA"); }
-        };
-
-        if(localStorage.getItem('ssiap_ai_installed') === 'true') {
-            window.updateAIStatusUI();
-        }
-    </script>
 
     <script>
-        // --- DB (IndexedDB) ---
-        const DB_NAME='CalepinDB', DB_VER=1; 
-        const dbPromise=new Promise((res,rej)=>{const r=indexedDB.open(DB_NAME,DB_VER);r.onupgradeneeded=e=>{if(!e.target.result.objectStoreNames.contains('notes'))e.target.result.createObjectStore('notes',{keyPath:'id'})};r.onsuccess=e=>res(e.target.result);r.onerror=e=>rej(e)});
-        async function dbPut(n){const db=await dbPromise;const tx=db.transaction('notes','readwrite');tx.objectStore('notes').put(n);return new Promise(r=>tx.oncomplete=r);}
-        async function dbGetAll(){const db=await dbPromise;const tx=db.transaction('notes','readonly');return new Promise(r=>tx.objectStore('notes').getAll().onsuccess=e=>r(e.target.result));}
-        async function dbDelete(id){const db=await dbPromise;const tx=db.transaction('notes','readwrite');tx.objectStore('notes').delete(id);return new Promise(r=>tx.oncomplete=r);}
-        
-        // NOUVELLE FONCTION D'IMPORTATION DE MASSE
-        async function dbImportAll(notes) {
-            const db = await dbPromise;
-            return new Promise((resolve, reject) => {
-                const tx = db.transaction('notes', 'readwrite');
-                const store = tx.objectStore('notes');
-                
-                tx.oncomplete = () => resolve();
-                tx.onerror = (e) => reject(e);
-                
-                notes.forEach(note => {
-                    if(note.id) store.put(note);
-                });
-            });
-        }
-        async function dbClear(){const db=await dbPromise;return new Promise((res,rej)=>{const tx=db.transaction('notes','readwrite');tx.objectStore('notes').clear();tx.oncomplete=res;tx.onerror=rej});}
+        let notes = [];
+        let currentNoteId = null;
+        let currentImages = [];
+        let searchTerm = "";
 
-        // VARS
-        window.notes = []; window.currentNoteId = null; window.currentImages = []; window.currentTags = [];
-        let saveTimeout = null;
+        // --- PARTAGE & IMPORT (Le cœur de la demande) ---
 
-        // INIT
-        async function init() {
-            try {
-                window.notes = await dbGetAll();
-                window.notes.sort((a,b) => b.updatedAt - a.updatedAt);
-                if(!window.notes.length) createNewNote(); else loadNote(window.notes[0].id);
-                renderNotesList();
-                
-                // Theme Loading
-                const savedTheme = localStorage.getItem('theme') || 'light';
-                setTheme(savedTheme);
-                
-                // Backup automatique à la fermeture/changement d'app
-                document.addEventListener('visibilitychange', () => {
-                    if (document.visibilityState === 'hidden') saveCurrentNote();
-                });
-            } catch(e) { console.error(e); }
-        }
-
-        // THEMES
-        function setTheme(theme) {
-            const html = document.documentElement;
-            html.classList.remove('dark'); // Reset tailwind dark mode
-            html.removeAttribute('data-theme');
-
-            if (theme === 'dark') {
-                html.classList.add('dark');
-            } else if (theme !== 'light') {
-                // For forest, night, terminal
-                html.setAttribute('data-theme', theme);
-                if (theme === 'night' || theme === 'terminal') html.classList.add('dark'); // These are dark-ish
-            }
+        // 1. Partager (Exporter UNE note en JSON)
+        function shareNoteFile() {
+            // Sauvegarder d'abord l'état actuel pour être sûr
+            const title = document.getElementById('note-title').value.trim();
+            const content = document.getElementById('note-content').value;
             
-            localStorage.setItem('theme', theme);
-            closeModal('theme-modal');
+            // Créer l'objet note
+            const noteToShare = {
+                id: Date.now().toString(), // Nouvel ID pour éviter conflits basiques
+                title: title || "Note Partagée",
+                content: content,
+                images: currentImages,
+                updatedAt: Date.now(),
+                type: 'calepin_share_v1' // Marqueur de sécurité
+            };
+
+            const dataStr = JSON.stringify(noteToShare, null, 2);
+            const blob = new Blob([dataStr], { type: "application/json" });
+            const url = URL.createObjectURL(blob);
+            
+            const a = document.createElement('a');
+            a.href = url;
+            const safeName = (title || "note").replace(/[^a-z0-9]/gi, '_').toLowerCase();
+            a.download = `${safeName}.json`; // Extension JSON pour import facile
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+            
+            showToast("Fichier note généré ! Envoyez-le à votre ami.");
         }
 
-
-        // LOGIC
-        function triggerAutoSave() {
-            const ind = document.getElementById('save-indicator');
-            ind.style.opacity = '0';
-            clearTimeout(saveTimeout);
-            saveTimeout = setTimeout(() => { saveCurrentNote(); ind.style.opacity = '1'; }, 800);
-        }
-
-        async function saveCurrentNote() {
-            const t = document.getElementById('note-title').value;
-            const c = document.getElementById('note-content').value;
-            if(!t && !c && !window.currentImages.length) return;
-            const note = { id: window.currentNoteId, title: t || "Sans titre", content: c, summary: document.getElementById('summary-content').innerText, images: window.currentImages, tags: window.currentTags, updatedAt: Date.now() };
-            const idx = window.notes.findIndex(n => n.id === window.currentNoteId);
-            if(idx >= 0) window.notes[idx] = note; else window.notes.unshift(note);
-            await dbPut(note); renderNotesList();
-        }
-
-        function createNewNote() {
-            window.currentNoteId = Date.now().toString();
-            window.currentImages = []; window.currentTags = [];
-            document.getElementById('note-title').value = "";
-            document.getElementById('note-content').value = "";
-            document.getElementById('note-date').innerText = new Date().toLocaleString();
-            document.getElementById('summary-box').classList.add('hidden');
-            renderImages(); if(window.innerWidth < 768) toggleSidebar(false); autoResize(document.getElementById('note-title'));
-        }
-
-        function loadNote(id) {
-            const n = window.notes.find(x => x.id === id); if(!n) return;
-            window.currentNoteId = n.id; window.currentImages = n.images || []; window.currentTags = n.tags || [];
-            document.getElementById('note-title').value = n.title; document.getElementById('note-content').value = n.content; document.getElementById('note-date').innerText = new Date(n.updatedAt).toLocaleString();
-            if(n.summary) { document.getElementById('summary-content').innerText = n.summary; document.getElementById('summary-box').classList.remove('hidden'); } else { document.getElementById('summary-box').classList.add('hidden'); }
-            renderImages(); renderNotesList(); autoResize(document.getElementById('note-title')); autoResize(document.getElementById('note-content')); if(window.innerWidth < 768) toggleSidebar(false);
-        }
-
-        function renderNotesList() {
-            const l = document.getElementById('notes-list'); l.innerHTML = "";
-            window.notes.forEach(n => {
-                const active = n.id === window.currentNoteId;
-                l.innerHTML += `<div onclick="loadNote('${n.id}')" class="p-3 rounded-xl cursor-pointer border transition-all ${active ? 'bg-white dark:bg-slate-700 border-indigo-500 shadow-sm' : 'border-transparent hover:bg-gray-100 dark:hover:bg-slate-800'}"><div class="font-bold text-sm truncate text-slate-800 dark:text-white mb-1">${n.title || "Sans titre"}</div><div class="flex items-center gap-1"><div class="text-xs text-gray-400 truncate">${n.content || "Vide..."}</div></div></div>`;
-            });
-        }
-
-        async function deleteCurrentNote() {
-            if(!confirm("Supprimer ?")) return;
-            await dbDelete(window.currentNoteId);
-            window.notes = window.notes.filter(n => n.id !== window.currentNoteId);
-            if(window.notes.length) loadNote(window.notes[0].id); else createNewNote();
-            showToast("Note supprimée");
-        }
-
-        // MODALS & TOOLS
-        function openModal(id) { document.getElementById(id).classList.remove('hidden'); document.getElementById(id).classList.add('flex'); }
-        function closeModal(id) { document.getElementById(id).classList.add('hidden'); document.getElementById(id).classList.remove('flex'); }
-        function applyTemplate(type) {
-            const t = document.getElementById('note-title'); const c = document.getElementById('note-content'); const d = new Date().toLocaleString();
-            if(type === 'cours') { t.value = `COURS - [Sujet]`; c.value = `📅 Date : ${d}\n👨‍🏫 Formateur :\n\n📌 Thème :\n\n🔹 Points Clés :\n\n\n⚠️ Important :`; }
-            if(type === 'extincteur') { t.value = `Vérif Extincteur - ${d}`; c.value = `[ ] Emplacement correct\n[ ] Signalisation visible\n[ ] Goupille présente\n[ ] Scellé intact\n[ ] Pas de choc visible\n\nObservation : RAS`; }
-            if(type === 'ronde') { t.value = `Ronde Sécurité - ${d}`; c.value = `📍 Départ : \n📍 Fin : \n\n[ ] Issues dégagées\n[ ] Éclairage sécu OK\n[ ] Pas de point chaud\n\nAnomalies : \n`; }
-            if(type === 'calculs') { t.value = `Calcul UP`; c.value = `Effectif : \nType Ets : \n\nCalcul : Effectif / 100 = \n\nRésultat UP : `; }
-            closeModal('template-modal'); autoResize(t); autoResize(c); saveCurrentNote();
-        }
-        function autoResize(el) { el.style.height = 'auto'; el.style.height = el.scrollHeight + 'px'; }
-        function insertText(txt) { const el = document.getElementById('note-content'); const s = el.selectionStart; el.value = el.value.substring(0, s) + txt + el.value.substring(el.selectionEnd); el.selectionStart = el.selectionEnd = s + txt.length; el.focus(); autoResize(el); saveCurrentNote(); }
-        function triggerCamera() { if(location.protocol === 'file:') alert("Caméra bloquée en local."); document.getElementById('cameraInput').click(); }
-        function handleImageUpload(inp) { const f = inp.files[0]; if(!f) return; const r = new FileReader(); r.onload = e => { const i = new Image(); i.src = e.target.result; i.onload = () => { const c = document.createElement('canvas'); const ratio = 1000 / Math.max(i.width, 1000); c.width = i.width * ratio; c.height = i.height * ratio; c.getContext('2d').drawImage(i, 0, 0, c.width, c.height); window.currentImages.push({ src: c.toDataURL('image/jpeg', 0.7), width: 48 }); renderImages(); saveCurrentNote(); }; }; r.readAsDataURL(f); inp.value = ""; }
-        function renderImages() { const g = document.getElementById('image-grid'); const c = document.getElementById('image-grid-container'); if(!window.currentImages.length) { c.classList.add('hidden'); return; } c.classList.remove('hidden'); g.innerHTML = ""; window.currentImages.forEach((img, i) => { g.innerHTML += `<div class="relative w-[48%] min-w-[140px] flex-grow rounded-lg overflow-hidden border border-gray-200 shadow-sm group"><img src="${img.src}" class="w-full h-auto"><button onclick="removeImage(${i})" class="absolute top-1 right-1 bg-white/80 text-red-600 p-1 rounded-full opacity-0 group-hover:opacity-100 transition-opacity"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg></button></div>`; }); }
-        function removeImage(i) { window.currentImages.splice(i, 1); renderImages(); saveCurrentNote(); }
-        let rec; let isRec = false;
-        function toggleDictation() { if(location.protocol === 'file:') { alert("Micro bloqué en local."); return; } if(!('webkitSpeechRecognition' in window)) { showToast("Micro non supporté", "error"); return; } if(isRec) stopRec(); else startRec(); }
-        function startRec() { const SR = window.webkitSpeechRecognition; rec = new SR(); rec.lang = 'fr-FR'; rec.continuous = true; rec.interimResults = false; rec.onstart = () => { isRec = true; document.getElementById('btn-mic').classList.add('mic-active'); showToast("Parlez..."); }; rec.onresult = e => insertText(e.results[e.results.length-1][0].transcript + " "); rec.start(); }
-        function stopRec() { if(rec) rec.stop(); isRec = false; document.getElementById('btn-mic').classList.remove('mic-active'); }
-        function toggleSidebar(force) { const s = document.getElementById('sidebar'); const o = document.getElementById('overlay'); const show = force !== undefined ? force : s.classList.contains('-translate-x-full'); if(show) { s.classList.remove('-translate-x-full'); o.classList.remove('hidden'); } else { s.classList.add('-translate-x-full'); o.classList.add('hidden'); } }
-        function showToast(m, t='success') { const el = document.getElementById('toast'); el.innerText = m; el.className = `fixed top-4 right-4 z-50 px-4 py-2 rounded-lg shadow-xl text-white text-sm font-bold transition-all duration-300 transform translate-y-0 opacity-100 ${t==='error'?'bg-red-500':'bg-emerald-600'}`; setTimeout(() => { el.classList.remove('translate-y-0', 'opacity-100'); t.classList.add('-translate-y-2', 'opacity-0'); }, 2000); }
-        async function downloadBackup() { const all = await dbGetAll(); const a = document.createElement('a'); a.href = URL.createObjectURL(new Blob([JSON.stringify(all)],{type:'application/json'})); a.download=`backup_ssiap_${new Date().toISOString().split('T')[0]}.json`; a.click(); }
-        
-        // RESTAURATION
-        function importBackup(input) {
+        // 2. Importer (Lire un fichier JSON et l'ajouter sans écraser)
+        function handleImport(input) {
             const file = input.files[0];
             if (!file) return;
-            
+
             const reader = new FileReader();
-            reader.onload = async (e) => {
+            reader.onload = (e) => {
                 try {
-                    const data = JSON.parse(e.target.result);
-                    if (Array.isArray(data)) {
-                         if (confirm(`Restaurer ${data.length} fiches ? (Écrase les données actuelles)`)) {
-                            await dbClear();
-                            await dbImportAll(data); // Use Batch Import
-                            await init();
-                            showToast("Restauration réussie !", "success");
-                         }
-                    } else {
-                         throw new Error("Format invalide");
+                    const importedNote = JSON.parse(e.target.result);
+                    
+                    // Vérification sommaire du format
+                    if (!importedNote.title && !importedNote.content) {
+                        throw new Error("Format invalide");
                     }
+
+                    // Logique Anti-Écrasement : Créer un nouvel ID unique
+                    importedNote.id = Date.now().toString() + Math.floor(Math.random() * 1000);
+                    importedNote.title = "[Import] " + (importedNote.title || "Sans titre");
+                    importedNote.updatedAt = Date.now();
+
+                    // Ajouter à la liste existante (PUSH)
+                    notes.unshift(importedNote);
+                    saveToStorage();
+                    
+                    // Charger la note importée
+                    loadNote(importedNote.id);
+                    showToast("Note importée avec succès !", "success");
+
                 } catch (err) {
                     console.error(err);
-                    alert("Fichier de sauvegarde invalide ou corrompu.");
+                    showToast("Erreur: Fichier note invalide", "error");
                 }
+                input.value = ""; // Reset
             };
             reader.readAsText(file);
-            input.value = ""; 
         }
 
-        function handleSearch(v) { const l = document.getElementById('notes-list'); Array.from(l.children).forEach(el => { el.style.display = el.innerText.toLowerCase().includes(v.toLowerCase()) ? 'block' : 'none'; }); }
 
+        // --- CORE FUNCTIONS (Standard) ---
+        function normalizeText(text) { return text.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase(); }
+        function getHighlightedSnippet(text, term) {
+            if (!text) return "<em>(Vide)</em>";
+            if (!term) return text.substring(0, 60) + (text.length > 60 ? "..." : "");
+            const normText = normalizeText(text); const normTerm = normalizeText(term);
+            const index = normText.indexOf(normTerm);
+            if (index === -1) return text.substring(0, 60) + (text.length > 60 ? "..." : "");
+            let start = Math.max(0, index - 30); let end = Math.min(text.length, index + term.length + 30);
+            let snippet = text.substring(start, end);
+            if (start > 0) snippet = "..." + snippet; if (end < text.length) snippet = snippet + "...";
+            const regex = new RegExp(`(${term})`, 'gi');
+            return snippet.replace(regex, '<mark>$1</mark>');
+        }
+        function highlightTitle(title, term) {
+            if (!term || !title) return title || "Sans titre";
+            const regex = new RegExp(`(${term})`, 'gi');
+            return title.replace(regex, '<mark>$1</mark>');
+        }
+        function init() {
+            const savedNotes = localStorage.getItem('mes-notes-locales');
+            if (savedNotes) { notes = JSON.parse(savedNotes); renderNotesList(); }
+            if (notes.length === 0) createNewNote(false); else loadNote(notes[0].id);
+        }
+        function handleSearch(value) { searchTerm = value.trim(); renderNotesList(); }
+        function saveToStorage() { localStorage.setItem('mes-notes-locales', JSON.stringify(notes)); }
+        function createNewNote(shouldRender = true) {
+            currentNoteId = Date.now().toString(); currentImages = [];
+            document.getElementById('note-title').value = ""; document.getElementById('note-content').value = "";
+            if(searchTerm) { document.getElementById('search-input').value = ""; searchTerm = ""; renderNotesList(); }
+            renderImages(); if(window.innerWidth < 768) toggleSidebar(false); showStatus("Nouvelle note brouillon");
+        }
+        function saveCurrentNote() {
+            const title = document.getElementById('note-title').value.trim();
+            const content = document.getElementById('note-content').value;
+            if (!title && !content && currentImages.length === 0) { showToast("Note vide !", "error"); return; }
+            const noteData = { id: currentNoteId, title: title || "Note sans titre", content: content, images: currentImages, updatedAt: Date.now() };
+            const existingIndex = notes.findIndex(n => n.id === currentNoteId);
+            if (existingIndex >= 0) notes[existingIndex] = noteData; else notes.unshift(noteData);
+            saveToStorage(); renderNotesList(); showToast("Note sauvegardée !"); showStatus("Sauvegardé à " + new Date().toLocaleTimeString());
+        }
+        function loadNote(id) {
+            const note = notes.find(n => n.id === id); if (!note) return;
+            currentNoteId = note.id;
+            document.getElementById('note-title').value = note.title; document.getElementById('note-content').value = note.content || "";
+            currentImages = note.images || []; renderImages(); renderNotesList();
+            if(window.innerWidth < 768) toggleSidebar(false);
+        }
+        function deleteNote(e, id) {
+            e.stopPropagation(); if(!confirm("Supprimer ?")) return;
+            notes = notes.filter(n => n.id !== id); saveToStorage();
+            if (currentNoteId === id) { if (notes.length > 0) loadNote(notes[0].id); else createNewNote(); } else renderNotesList();
+            showToast("Note supprimée");
+        }
+        function renderNotesList() {
+            const list = document.getElementById('notes-list'); list.innerHTML = "";
+            let displayNotes = notes;
+            if (searchTerm) {
+                const normTerm = normalizeText(searchTerm);
+                displayNotes = notes.filter(note => {
+                    const t = normalizeText(note.title || ""); const c = normalizeText(note.content || "");
+                    return t.includes(normTerm) || c.includes(normTerm);
+                });
+            }
+            if (displayNotes.length === 0) { list.innerHTML = `<div class="text-center py-10 px-4 text-slate-400 text-sm italic">${searchTerm ? "Aucun résultat." : "Aucune note."}</div>`; return; }
+            displayNotes.sort((a,b) => b.updatedAt - a.updatedAt).forEach(note => {
+                const isActive = note.id === currentNoteId;
+                const displayTitle = searchTerm ? highlightTitle(note.title, searchTerm) : (note.title || "Sans titre");
+                const displayContent = searchTerm ? getHighlightedSnippet(note.content, searchTerm) : (note.content ? note.content.substring(0, 60) + (note.content.length>60?"...":"") : (note.images.length ? '<em>[Photos]</em>' : '<em>Vide</em>'));
+                const div = document.createElement('div');
+                div.className = `p-3 rounded-lg cursor-pointer border transition-all duration-200 mb-2 relative group ${isActive ? 'bg-indigo-50 border-indigo-200 shadow-sm' : 'bg-white border-transparent hover:bg-slate-50 hover:border-slate-200'}`;
+                div.onclick = () => loadNote(note.id);
+                div.innerHTML = `<div class="flex justify-between items-start mb-1"><h3 class="font-semibold truncate text-sm ${isActive ? 'text-indigo-900' : 'text-slate-700'} w-4/5">${displayTitle}</h3><button onclick="deleteNote(event, '${note.id}')" class="text-slate-300 hover:text-red-500 opacity-0 group-hover:opacity-100 transition-opacity p-1"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg></button></div><p class="text-xs text-slate-500 line-clamp-2 h-8 overflow-hidden text-ellipsis leading-relaxed">${displayContent}</p>`;
+                list.appendChild(div);
+            });
+        }
+        function renderImages() {
+            const grid = document.getElementById('image-grid'); const container = document.getElementById('image-grid-container'); const countSpan = document.getElementById('img-count');
+            if (currentImages.length === 0) { container.classList.add('hidden'); return; }
+            container.classList.remove('hidden'); countSpan.innerText = currentImages.length; grid.innerHTML = "";
+            currentImages.forEach((imgSrc, idx) => {
+                const div = document.createElement('div'); div.className = "relative group rounded-xl overflow-hidden shadow-sm border border-slate-200 bg-white aspect-square";
+                div.innerHTML = `<img src="${imgSrc}" class="w-full h-full object-cover"><div class="absolute inset-0 bg-black/0 group-hover:bg-black/40 transition-colors flex items-center justify-center opacity-0 group-hover:opacity-100"><button onclick="removeImage(${idx})" class="bg-white text-red-600 p-2 rounded-full hover:bg-red-50 shadow-lg transform scale-90 group-hover:scale-100 transition-all"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg></button></div>`;
+                grid.appendChild(div);
+            });
+        }
+        function handleImageUpload(input) {
+            const file = input.files[0]; if (!file) return; showStatus("Compression...");
+            const reader = new FileReader(); reader.readAsDataURL(file);
+            reader.onload = (e) => {
+                const img = new Image(); img.src = e.target.result;
+                img.onload = () => {
+                    const canvas = document.createElement('canvas'); const scale = 800 / Math.max(img.width, 800);
+                    canvas.width = img.width * scale; canvas.height = img.height * scale;
+                    const ctx = canvas.getContext('2d'); ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+                    currentImages.push(canvas.toDataURL('image/jpeg', 0.7)); renderImages(); showStatus("Ajoutée"); showToast("Image ajoutée"); input.value = "";
+                };
+            };
+        }
+        function removeImage(idx) { currentImages.splice(idx, 1); renderImages(); }
+        function exportHTML() {
+            const title = document.getElementById('note-title').value || "Note"; const content = document.getElementById('note-content').value; const date = new Date().toLocaleDateString();
+            let html = `<!DOCTYPE html><html lang="fr"><head><meta charset="UTF-8"><title>${title}</title><style>body{font-family:system-ui,sans-serif;max-width:800px;margin:20px auto;padding:20px;line-height:1.6;color:#333}h1{border-bottom:2px solid #eee;padding-bottom:10px}.img-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:15px;margin-top:30px}img{width:100%;border-radius:4px;border:1px solid #ddd}</style></head><body><h1>${title}</h1><p style="color:#888">${date}</p><div style="white-space:pre-wrap">${content}</div>`;
+            if (currentImages.length > 0) { html += `<div class="img-grid">`; currentImages.forEach(img => html += `<img src="${img}">`); html += `</div>`; } html += `</body></html>`;
+            document.getElementById('export-area').value = html; document.getElementById('export-modal').classList.remove('hidden'); document.getElementById('export-modal').classList.add('flex');
+        }
+        function closeExportModal() { document.getElementById('export-modal').classList.add('hidden'); document.getElementById('export-modal').classList.remove('flex'); }
+        function copyToClipboard() { document.getElementById('export-area').select(); document.execCommand('copy'); showToast("Code copié !"); }
+        function toggleSidebar(force) { const sb = document.getElementById('sidebar'); const ol = document.getElementById('overlay'); if (force!==undefined?force:sb.classList.contains('-translate-x-full')) { sb.classList.remove('-translate-x-full'); ol.classList.remove('hidden'); } else { sb.classList.add('-translate-x-full'); ol.classList.add('hidden'); } }
+        function showToast(msg, type='success') { const t = document.getElementById('toast'); t.innerText = msg; t.className = `fixed top-4 right-4 z-50 px-4 py-2 rounded-lg shadow-lg text-white text-sm font-medium transition-all duration-300 transform ${type==='error'?'bg-red-500':'bg-emerald-600'} translate-y-0 opacity-100`; setTimeout(() => { t.classList.remove('translate-y-0', 'opacity-100'); t.classList.add('-translate-y-2', 'opacity-0'); }, 3000); }
+        function showStatus(msg) { document.getElementById('status-msg').innerText = msg; }
         init();
     </script>
 </body>
